@@ -20,9 +20,43 @@ services:
     networks:
       - devices-network
 
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: devices-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+    networks:
+      - devices-network
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: devices-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=grafana-clock-panel
+      - GF_INSTALL_PLUGINS=grafana-clock-panel
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/dashboards:/etc/grafana/provisioning/dashboards
+      - ./monitoring/datasources:/etc/grafana/provisioning/datasources
+    networks:
+      - devices-network
+    restart: unless-stopped
 
 volumes:
   postgres_data:
+  prometheus_data:
+  grafana_data:
 
 networks:
   devices-network:

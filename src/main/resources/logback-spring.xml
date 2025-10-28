@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    
+    <!-- Spring Profile detection -->
+    <springProfile name="!prod">
+        <!-- Development/Testing: Console with pretty formatting -->
+        <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+                <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            </encoder>
+        </appender>
+        
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+    </springProfile>
+    
+    <springProfile name="prod">
+        <!-- Production: JSON structured logging -->
+        <appender name="JSON_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+                <includeContext>true</includeContext>
+                <includeMdcKeyName>traceId</includeMdcKeyName>
+                <includeMdcKeyName>spanId</includeMdcKeyName>
+                <customFields>{"application":"devices","version":"0.0.1-SNAPSHOT"}</customFields>
+            </encoder>
+        </appender>
+        
+        <root level="INFO">
+            <appender-ref ref="JSON_CONSOLE"/>
+        </root>
+    </springProfile>
+    
+    <!-- Application package logging -->
+    <logger name="com.rdpk" level="INFO"/>
+    
+    <!-- Spring and database logging -->
+    <logger name="org.springframework.r2dbc" level="WARN"/>
+    <logger name="org.springframework.web" level="INFO"/>
+    
+    <!-- Reduce noise from other libraries -->
+    <logger name="org.springframework" level="WARN"/>
+    <logger name="io.netty" level="WARN"/>
+    <logger name="reactor" level="WARN"/>
+</configuration>

@@ -2,6 +2,12 @@ package com.rdpk.device.repository;
 
 import com.rdpk.device.domain.Device;
 import com.rdpk.device.domain.DeviceState;
+import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
+import io.github.resilience4j.reactor.circuitbreaker.operator.CircuitBreakerOperator;
+import io.github.resilience4j.reactor.retry.RetryOperator;
+import io.github.resilience4j.reactor.timelimiter.TimeLimiterOperator;
+import io.github.resilience4j.retry.RetryRegistry;
+import io.github.resilience4j.timelimiter.TimeLimiterRegistry;
 import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
@@ -11,15 +17,39 @@ import reactor.core.publisher.Mono;
 public class DeviceRepositoryImpl implements DeviceRepository {
     
     private final DatabaseClient databaseClient;
+    private final CircuitBreakerRegistry circuitBreakerRegistry;
+    private final RetryRegistry retryRegistry;
+    private final TimeLimiterRegistry timeLimiterRegistry;
     
-    public DeviceRepositoryImpl(DatabaseClient databaseClient) {
+    public DeviceRepositoryImpl(
+            DatabaseClient databaseClient,
+            CircuitBreakerRegistry circuitBreakerRegistry,
+            RetryRegistry retryRegistry,
+            TimeLimiterRegistry timeLimiterRegistry) {
         this.databaseClient = databaseClient;
+        this.circuitBreakerRegistry = circuitBreakerRegistry;
+        this.retryRegistry = retryRegistry;
+        this.timeLimiterRegistry = timeLimiterRegistry;
+    }
+    
+    private <T> Mono<T> applyResilience(Mono<T> mono) {
+        return mono
+                .transformDeferred(CircuitBreakerOperator.of(circuitBreakerRegistry.circuitBreaker("devices")))
+                .transformDeferred(RetryOperator.of(retryRegistry.retry("devices")))
+                .transformDeferred(TimeLimiterOperator.of(timeLimiterRegistry.timeLimiter("devices")));
+    }
+    
+    private <T> Flux<T> applyResilience(Flux<T> flux) {
+        return flux
+                .transformDeferred(CircuitBreakerOperator.of(circuitBreakerRegistry.circuitBreaker("devices")))
+                .transformDeferred(RetryOperator.of(retryRegistry.retry("devices")))
+                .transformDeferred(TimeLimiterOperator.of(timeLimiterRegistry.timeLimiter("devices")));
     }
     
     @Override
     public Mono<Device> save(Device device) {
         if (device.id() == null) {
-            return databaseClient.sql("""
+            return applyResilience(databaseClient.sql("""
                     INSERT INTO devices (name, brand, state, created_at)
                     VALUES (:name, :brand, :state, :createdAt)
                     RETURNING id, name, brand, state, created_at
@@ -35,9 +65,9 @@ public class DeviceRepositoryImpl implements DeviceRepository {
                         DeviceState.valueOf((String) row.get("state")),
                         (java.time.LocalDateTime) row.get("created_at")
                     ))
-                    .one();
+                    .one());
         } else {
-            return databaseClient.sql("""
+            return applyResilience(databaseClient.sql("""
                     UPDATE devices 
                     SET name = :name, brand = :brand, state = :state
                     WHERE id = :id
@@ -54,13 +84,13 @@ public class DeviceRepositoryImpl implements DeviceRepository {
                         DeviceState.valueOf((String) row.get("state")),
                         (java.time.LocalDateTime) row.get("created_at")
                     ))
-                    .one();
+                    .one());
         }
     }
     
     @Override
     public Mono<Device> findById(Long id) {
-        return databaseClient.sql("""
+        return applyResilience(databaseClient.sql("""
                 SELECT id, name, brand, state, created_at
                 FROM devices
                 WHERE id = :id
@@ -74,21 +104,21 @@ public class DeviceRepositoryImpl implements DeviceRepository {
                     (java.time.LocalDateTime) row.get("created_at")
                 ))
                 .one()
-                .switchIfEmpty(Mono.empty());
+                .switchIfEmpty(Mono.empty()));
     }
     
     @Override
     public Mono<Void> deleteById(Long id) {
-        return databaseClient.sql("DELETE FROM devices WHERE id = :id")
+        return applyResilience(databaseClient.sql("DELETE FROM devices WHERE id = :id")
                 .bind("id", id)
                 .fetch()
                 .rowsUpdated()
-                .then();
+                .then());
     }
     
     @Override
     public Flux<Device> findAll() {
-        return databaseClient.sql("""
+        return applyResilience(databaseClient.sql("""
                 SELECT id, name, brand, state, created_at
                 FROM devices
                 ORDER BY created_at DESC
@@ -100,12 +130,12 @@ public class DeviceRepositoryImpl implements DeviceRepository {
                     DeviceState.valueOf((String) row.get("state")),
                     (java.time.LocalDateTime) row.get("created_at")
                 ))
-                .all();
+                .all());
     }
     
     @Override
     public Flux<Device> findByBrand(String brand) {
-        return databaseClient.sql("""
+        return applyResilience(databaseClient.sql("""
                 SELECT id, name, brand, state, created_at
                 FROM devices
                 WHERE brand = :brand
@@ -119,12 +149,12 @@ public class DeviceRepositoryImpl implements DeviceRepository {
                     DeviceState.valueOf((String) row.get("state")),
                     (java.time.LocalDateTime) row.get("created_at")
                 ))
-                .all();
+                .all());
     }
     
     @Override
     public Flux<Device> findByState(DeviceState state) {
-        return databaseClient.sql("""
+        return applyResilience(databaseClient.sql("""
                 SELECT id, name, brand, state, created_at
                 FROM devices
                 WHERE state = :state
@@ -138,15 +168,15 @@ public class DeviceRepositoryImpl implements DeviceRepository {
                     DeviceState.valueOf((String) row.get("state")),
                     (java.time.LocalDateTime) row.get("created_at")
                 ))
-                .all();
+                .all());
     }
     
     @Override
     public Mono<Boolean> existsById(Long id) {
-        return databaseClient.sql("SELECT COUNT(*) FROM devices WHERE id = :id")
+        return applyResilience(databaseClient.sql("SELECT COUNT(*) FROM devices WHERE id = :id")
                 .bind("id", id)
                 .map(row -> ((Number) row.get("count")).intValue() > 0)
-                .one();
+                .one());
     }
 }
 

@@ -51,7 +51,7 @@ start:
 	mvn spring-boot:run
 
 start-k6:
-	@echo "🚀 Starting Voting System for K6 Testing..."
+	@echo "🚀 Starting IoT Devices Management System for K6 Testing..."
 	@echo "1. Stopping any existing containers..."
 	docker-compose down -v
 	@echo "2. Starting PostgreSQL..."
@@ -62,7 +62,7 @@ start-k6:
 	mvn spring-boot:run -Dspring-boot.run.profiles=k6
 
 start-resilience:
-	@echo "🚀 Starting Voting System for Resilience Testing..."
+	@echo "🚀 Starting IoT Devices Management System for Resilience Testing..."
 	@echo "1. Stopping any existing containers..."
 	docker-compose down -v
 	@echo "2. Starting PostgreSQL..."
@@ -77,6 +77,11 @@ stop:
 	docker-compose down -v
 	pkill -f "spring-boot:run" || true
 
+stop-obs:
+	@echo "🛑 Stopping IoT Devices Management System and Observability Stack..."
+	docker-compose down -v
+	pkill -f "spring-boot:run" || true
+
 restart: stop start
 
 logs:
@@ -85,6 +90,33 @@ logs:
 health:
 	@echo "🏥 Checking application health..."
 	@curl -s http://localhost:8080/actuator/health | python3 -m json.tool || echo "❌ Application not responding"
+
+# Observability Commands
+start-obs:
+	@echo "🚀 Starting IoT Devices Management System with Observability Stack..."
+	@echo "1. Starting PostgreSQL, Prometheus, and Grafana..."
+	docker-compose up -d
+	@echo "2. Waiting for services to be ready..."
+	sleep 10
+	@echo "3. Starting the application..."
+	mvn spring-boot:run -Dspring-boot.run.profiles=prod &
+	@echo "✅ Services started!"
+	@echo "📍 Application: http://localhost:8080"
+	@echo "📍 Grafana: http://localhost:3000 (admin/admin)"
+	@echo "📍 Prometheus: http://localhost:9090"
+
+grafana:
+	@echo "📊 Opening Grafana..."
+	@open http://localhost:3000 || xdg-open http://localhost:3000 || echo "Please open http://localhost:3000"
+	@echo "Login: admin / admin"
+
+prometheus:
+	@echo "🔍 Opening Prometheus..."
+	@open http://localhost:9090 || xdg-open http://localhost:9090 || echo "Please open http://localhost:9090"
+
+metrics:
+	@echo "📊 Application metrics:"
+	@curl -s http://localhost:8080/actuator/metrics | python3 -m json.tool || echo "❌ Application not responding"
 
 # Testing
 test:

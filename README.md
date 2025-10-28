@@ -53,6 +53,12 @@ Once running, access:
 - **API Documentation (Swagger)**: http://localhost:8080/swagger-ui.html
 - **OpenAPI Spec**: http://localhost:8080/v3/api-docs
 - **Actuator Health**: http://localhost:8080/actuator/health
+- **Prometheus Metrics**: http://localhost:8080/actuator/prometheus
+
+### Observability Stack (with `make start-obs`)
+
+- **Grafana**: http://localhost:3000 (admin/admin) - Visual dashboards and metrics
+- **Prometheus**: http://localhost:9090 - Metrics collection and querying
 
 ## Project Structure
 
@@ -158,29 +164,130 @@ The application uses PostgreSQL with R2DBC for reactive database access and Flyw
 
 ## Resilience Patterns
 
-The application implements comprehensive resilience patterns:
+The application implements comprehensive resilience patterns using **Resilience4j with Reactor transformers** (not annotations):
 
-- **Circuit Breaker**: Protects against cascading failures
-- **Retry**: Automatic retry for transient failures
-- **Timeout**: Prevents hanging requests
-- **Bulkhead**: Isolates thread pools
-- **Rate Limiter**: Prevents overloading
+- **Circuit Breaker**: Protects against cascading database failures (opens after 50% failure rate)
+- **Retry**: Automatic retry for transient failures (3 attempts with 1s delay)
+- **Timeout**: Prevents hanging requests (5s overall operation timeout)
+- **Rate Limiter**: Prevents overloading (100 req/s limit)
+
+### Layered Timeout Strategy
+
+The application uses a **3-layer timeout strategy** to ensure fast failure at each level:
+
+```
+Layer 3: Resilience4j TimeLimiter (5s) - Overall operation timeout
+    ↓
+Layer 2: R2DBC Statement Timeout (4s) - Query execution timeout
+    ↓
+Layer 1: R2DBC Connection Timeout (3s) - Connection establishment timeout
+```
+
+Each layer fails fast before the next layer triggers, preventing cascade issues.
+
+### Implementation
+
+Resilience4j transformers are applied to all database operations in `DeviceRepositoryImpl` using `.transformDeferred()`:
+
+```java
+return databaseClient.sql("SELECT...")
+    .map(...)
+    .one()
+    .transformDeferred(CircuitBreakerOperator.of(circuitBreakerRegistry.circuitBreaker("devices")))
+    .transformDeferred(RetryOperator.of(retryRegistry.retry("devices")))
+    .transformDeferred(TimeLimiterOperator.of(timeLimiterRegistry.timeLimiter("devices")));
+```
+
+### Configuration
 
 Configure in `application.properties`:
 
 ```properties
-# Circuit Breaker
-resilience4j.circuitbreaker.instances.devices-config.slidingWindowSize=10
+# R2DBC Connection Factory Timeout (layered timeout strategy)
+spring.r2dbc.properties.connectTimeout=3s        # Connection establishment
+spring.r2dbc.properties.statementTimeout=4s      # Query execution
 
-# Retry
-resilience4j.retry.instances.devices-config.maxAttempts=3
+# Resilience4j Configuration
+resilience4j.circuitbreaker.instances.devices.slidingWindowSize=10
+resilience4j.circuitbreaker.instances.devices.failureRateThreshold=50
+resilience4j.circuitbreaker.instances.devices.waitDurationInOpenState=60000
 
-# Timeout
-resilience4j.timelimiter.instances.devices-config.timeoutDuration=5s
+resilience4j.retry.instances.devices.maxAttempts=3
+resilience4j.retry.instances.devices.waitDuration=1000
 
-# Rate Limiter
-resilience4j.ratelimiter.instances.devices-config.limitForPeriod=100
+resilience4j.timelimiter.instances.devices.timeoutDuration=5s
+
+resilience4j.ratelimiter.instances.devices.limitForPeriod=100
+resilience4j.ratelimiter.instances.devices.limitRefreshPeriod=PT1S
 ```
+
+### K6 Testing Profile
+
+For performance testing, use the K6 profile with relaxed rate limits:
+
+```bash
+make start-k6  # Uses application-k6.properties (no rate limits)
+```
+
+The K6 profile removes rate limits to allow unlimited throughput for load testing.
+
+## Observability
+
+The application includes comprehensive observability with structured logging, metrics collection, and visualization.
+
+### Structured Logging
+
+JSON-formatted logs for production environments:
+- **Development**: Pretty-printed console output
+- **Production**: JSON structured logs with correlation IDs
+- **Format**: Includes timestamp, level, logger, message, and MDC context
+
+Example JSON log:
+```json
+{
+  "@timestamp": "2025-10-28T18:00:00.000Z",
+  "level": "INFO",
+  "logger": "com.rdpk.device.service.DeviceService",
+  "message": "Device created successfully",
+  "application": "devices"
+}
+```
+
+### Metrics and Monitoring
+
+Start the observability stack:
+```bash
+make start-obs
+```
+
+Access monitoring tools:
+- **Grafana**: http://localhost:3000 (admin/admin)
+- **Prometheus**: http://localhost:9090
+- **Application Metrics**: http://localhost:8080/actuator/prometheus
+
+Useful commands:
+```bash
+make start-obs    # Start application with Prometheus & Grafana
+make grafana      # Open Grafana dashboard
+make prometheus   # Open Prometheus UI
+make metrics      # View raw metrics
+make stop-obs     # Stop observability stack
+```
+
+### Metrics Collected
+
+The application exports the following metrics:
+- **HTTP**: Request count, latency, status codes
+- **JVM**: Memory usage, thread count, GC pauses
+- **Resilience4j**: Circuit breaker state, retry attempts, timeout occurrences
+- **Database**: Connection pool metrics, query duration
+
+### Logging Configuration
+
+Logging is configured via `logback-spring.xml`:
+- **Production**: JSON format for log aggregation tools
+- **Development**: Human-readable format for local development
+- **Log Levels**: Configurable per package and environment
 
 ## License
 
