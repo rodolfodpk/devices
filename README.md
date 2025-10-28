@@ -261,7 +261,9 @@ make start-obs
 ```
 
 Access monitoring tools:
-- **Grafana**: http://localhost:3000 (admin/admin)
+- **Grafana**: http://localhost:3000 (admin/admin) - Pre-configured dashboards auto-loaded
+  - Application Metrics Dashboard (HTTP rate, duration, JVM memory, threads)
+  - Resilience4j Metrics Dashboard (Circuit breaker state, calls, failure rate, retries)
 - **Prometheus**: http://localhost:9090
 - **Application Metrics**: http://localhost:8080/actuator/prometheus
 
