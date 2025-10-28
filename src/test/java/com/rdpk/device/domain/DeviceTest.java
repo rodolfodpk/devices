@@ -110,5 +110,72 @@ class DeviceTest {
         assertThat(original.name()).isEqualTo("Device");
         assertThat(original.state()).isEqualTo(DeviceState.AVAILABLE);
     }
+    
+    @Test
+    @DisplayName("Should correctly identify inactive devices as not in use")
+    void shouldIdentifyInactiveDevicesAsNotInUse() {
+        // Given
+        Device inactiveDevice = new Device("Device", "Brand").withState(DeviceState.INACTIVE);
+        
+        // Then
+        assertThat(inactiveDevice.isInUse()).isFalse();
+        assertThat(inactiveDevice.state()).isEqualTo(DeviceState.INACTIVE);
+    }
+    
+    @Test
+    @DisplayName("Should correctly identify isDeletable for all states")
+    void shouldCorrectlyIdentifyIsDeletableForAllStates() {
+        // Given
+        Device availableDevice = new Device("Available", "Brand");
+        Device inUseDevice = new Device("InUse", "Brand").withState(DeviceState.IN_USE);
+        Device inactiveDevice = new Device("Inactive", "Brand").withState(DeviceState.INACTIVE);
+        
+        // Then
+        assertThat(availableDevice.isDeletable()).isTrue(); // AVAILABLE can be deleted
+        assertThat(inUseDevice.isDeletable()).isFalse(); // IN_USE cannot be deleted
+        assertThat(inactiveDevice.isDeletable()).isFalse(); // INACTIVE cannot be deleted
+    }
+    
+    @Test
+    @DisplayName("Should allow state transition to INACTIVE")
+    void shouldAllowStateTransitionToInactive() {
+        // Given
+        Device availableDevice = new Device("Device", "Brand");
+        
+        // When
+        Device inactiveDevice = availableDevice.withState(DeviceState.INACTIVE);
+        
+        // Then
+        assertThat(inactiveDevice.state()).isEqualTo(DeviceState.INACTIVE);
+        assertThat(availableDevice.state()).isEqualTo(DeviceState.AVAILABLE); // Original unchanged
+    }
+    
+    @Test
+    @DisplayName("Should allow state transition from INACTIVE")
+    void shouldAllowStateTransitionFromInactive() {
+        // Given
+        Device inactiveDevice = new Device("Device", "Brand").withState(DeviceState.INACTIVE);
+        
+        // When - reactivate device
+        Device reactivatedDevice = inactiveDevice.withState(DeviceState.AVAILABLE);
+        
+        // Then
+        assertThat(reactivatedDevice.state()).isEqualTo(DeviceState.AVAILABLE);
+        assertThat(inactiveDevice.state()).isEqualTo(DeviceState.INACTIVE); // Original unchanged
+    }
+    
+    @Test
+    @DisplayName("Should test isInUse() for all three states")
+    void shouldTestIsInUseForAllStates() {
+        // Given
+        Device availableDevice = new Device("Available", "Brand");
+        Device inUseDevice = new Device("InUse", "Brand").withState(DeviceState.IN_USE);
+        Device inactiveDevice = new Device("Inactive", "Brand").withState(DeviceState.INACTIVE);
+        
+        // Then
+        assertThat(availableDevice.isInUse()).isFalse();
+        assertThat(inUseDevice.isInUse()).isTrue();
+        assertThat(inactiveDevice.isInUse()).isFalse();
+    }
 }
 
