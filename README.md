@@ -75,15 +75,6 @@ make logs       # Show application logs
 - ✅ **Testing**: 48 tests covering domain, repository, service, controller, and E2E flows
 - ✅ **Performance Testing**: K6 load, stress, and spike tests
 
-## Architecture
-
-Package-per-layer architecture with integration tests:
-
-- **Controller**: REST API endpoints
-- **Service**: Business logic and domain validation
-- **Repository**: Database access with Resilience4j transformers
-- **Domain**: Entities and business rules
-
 ## Domain Model
 
 **Device States:**
@@ -96,21 +87,6 @@ Package-per-layer architecture with integration tests:
 - Name and brand cannot be updated if device is IN_USE
 - Devices in IN_USE or INACTIVE state cannot be deleted
 - INACTIVE devices can be updated (to allow reactivation)
-
-## Resilience Patterns
-
-Layered timeout strategy ensures fast failure:
-
-```
-Resilience4j TimeLimiter (5s) → R2DBC Statement (4s) → R2DBC Connection (3s)
-```
-
-All database operations protected with:
-- Circuit Breaker (opens after 50% failure rate)
-- Retry (3 attempts with 1s delay)
-- Timeout (5s overall operation timeout)
-
-Note: Rate Limiter is configured but not applied to database operations.
 
 ## License
 
