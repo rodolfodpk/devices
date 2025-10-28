@@ -212,35 +212,13 @@ mvn test -Dtest=DeviceArchitectureTest
 
 ## Resilience Patterns
 
-Database operations in the repository layer are protected with Resilience4j:
+Database operations in the repository layer are protected with Resilience4j using Reactor transformers.
 
-- **Circuit Breaker**: Opens after 50% failure rate
-- **Retry**: 3 attempts with 1s delay
-- **Timeout**: 5s overall operation timeout
-
-Applied using Reactor transformers:
-```java
-private <T> Mono<T> applyResilience(Mono<T> mono) {
-    return mono
-        .transformDeferred(CircuitBreakerOperator.of(...))
-        .transformDeferred(RetryOperator.of(...))
-        .transformDeferred(TimeLimiterOperator.of(...));
-}
-```
-
-## Layered Timeout Strategy
-
-3-layer timeout protection:
-
-```
-Resilience4j TimeLimiter (5s)
-    ↓
-R2DBC Statement Timeout (4s)
-    ↓
-R2DBC Connection Timeout (3s)
-```
-
-Each layer fails fast before triggering the next layer.
+See **[Resilience Documentation](RESILIENCE.md)** for details on:
+- Circuit Breaker configuration
+- Retry strategy
+- Layered timeout strategy
+- Reactor transformer usage
 
 ## Best Practices
 

@@ -61,6 +61,7 @@ make logs       # Show application logs
 ## Documentation
 
 - **[Architecture](docs/ARCHITECTURE.md)** - Package structure and dependency rules
+- **[Resilience](docs/RESILIENCE.md)** - Circuit Breaker, Retry, and Timeout patterns
 - **[Testing Guide](docs/TESTING.md)** - Test strategy and coverage
 - **[K6 Performance Testing](docs/K6_PERFORMANCE.md)** - Load testing with K6
 - **[Observability](docs/OBSERVABILITY.md)** - Monitoring and Grafana dashboards
