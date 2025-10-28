@@ -10,7 +10,7 @@ IoT device management system built with Spring Boot 3.5.7 and reactive programmi
 
 - **Framework**: Spring Boot 3.5.7 (Java 25)
 - **Reactive Stack**: Spring WebFlux, Project Reactor, R2DBC
-- **Database**: PostgreSQL 17.2 (Reactive)
+- **Database**: PostgreSQL 17.2 (accessed via R2DBC)
 - **Resilience**: Resilience4j (Circuit Breaker, Retry, Timeout)
 - **Observability**: Prometheus, Grafana, Spring Boot Actuator
 - **Testing**: JUnit 5, Testcontainers, K6
