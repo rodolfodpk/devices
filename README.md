@@ -1,5 +1,9 @@
 # IoT Devices Management System
 
+![CI](https://github.com/rodolfodpk/devices/workflows/CI/badge.svg)
+![Codecov](https://codecov.io/gh/rodolfodpk/devices/branch/main/graph/badge.svg)
+![License](https://img.shields.io/badge/license-Copyright-orange)
+
 A comprehensive IoT device management system built with Spring Boot 3.5.6 and reactive programming (Spring WebFlux).
 
 ## Technology Stack
