@@ -11,7 +11,7 @@ A comprehensive IoT device management system built with Spring Boot 3.5.6 and re
 - **Framework**: Spring Boot 3.5.6 (Java 25)
 - **Reactive Stack**: Spring WebFlux, Project Reactor, R2DBC
 - **Database**: PostgreSQL 17.2 (Reactive)
-- **Resilience**: Resilience4j (Circuit Breaker, Retry, Timeout, Rate Limiter)
+- **Resilience**: Resilience4j (Circuit Breaker, Retry, Timeout)
 - **Observability**: Prometheus, Grafana, Spring Boot Actuator
 - **Testing**: JUnit 5, Testcontainers, K6
 
@@ -67,7 +67,7 @@ make logs       # Show application logs
 ## Key Features
 
 - ✅ **Reactive Programming**: Full non-blocking architecture
-- ✅ **Resilience Patterns**: Circuit breakers, retries, timeouts, rate limiters
+- ✅ **Resilience Patterns**: Circuit breakers, retries, timeouts
 - ✅ **Observability**: Structured logging, metrics, dashboards
 - ✅ **API Documentation**: Auto-generated Swagger UI
 - ✅ **Testing**: 48 tests covering domain, repository, service, controller, and E2E flows
@@ -94,6 +94,8 @@ All database operations protected with:
 - Circuit Breaker (opens after 50% failure rate)
 - Retry (3 attempts with 1s delay)
 - Timeout (5s overall operation timeout)
+
+Note: Rate Limiter is configured but not applied to database operations.
 
 ## License
 
