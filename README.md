@@ -4,7 +4,7 @@
 [![codecov](https://codecov.io/github/rodolfodpk/devices/graph/badge.svg?token=9XOKJB6039)](https://codecov.io/github/rodolfodpk/devices)
 ![License](https://img.shields.io/badge/license-Copyright-orange)
 
-A comprehensive IoT device management system built with Spring Boot 3.5.7 and reactive programming (Spring WebFlux).
+IoT device management system built with Spring Boot 3.5.7 and reactive programming (Spring WebFlux).
 
 ## Technology Stack
 
@@ -60,13 +60,13 @@ make logs       # Show application logs
 
 ## Documentation
 
-- **[Testing Guide](docs/TESTING.md)** - Comprehensive test strategy and coverage
+- **[Testing Guide](docs/TESTING.md)** - Test strategy and coverage
 - **[K6 Performance Testing](docs/K6_PERFORMANCE.md)** - Load testing with K6
 - **[Observability](docs/OBSERVABILITY.md)** - Monitoring and Grafana dashboards
 
 ## Key Features
 
-- ✅ **Reactive Programming**: Full non-blocking architecture
+- ✅ **Reactive Programming**: Non-blocking architecture
 - ✅ **Resilience Patterns**: Circuit breakers, retries, timeouts
 - ✅ **Observability**: Structured logging, metrics, dashboards
 - ✅ **API Documentation**: Auto-generated Swagger UI
@@ -75,7 +75,7 @@ make logs       # Show application logs
 
 ## Architecture
 
-Package-per-layer architecture with comprehensive integration tests:
+Package-per-layer architecture with integration tests:
 
 - **Controller**: REST API endpoints
 - **Service**: Business logic and domain validation
