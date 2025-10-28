@@ -4,11 +4,11 @@
 [![codecov](https://codecov.io/github/rodolfodpk/devices/graph/badge.svg?token=9XOKJB6039)](https://codecov.io/github/rodolfodpk/devices)
 ![License](https://img.shields.io/badge/license-Copyright-orange)
 
-A comprehensive IoT device management system built with Spring Boot 3.5.6 and reactive programming (Spring WebFlux).
+A comprehensive IoT device management system built with Spring Boot 3.5.7 and reactive programming (Spring WebFlux).
 
 ## Technology Stack
 
-- **Framework**: Spring Boot 3.5.6 (Java 25)
+- **Framework**: Spring Boot 3.5.7 (Java 25)
 - **Reactive Stack**: Spring WebFlux, Project Reactor, R2DBC
 - **Database**: PostgreSQL 17.2 (Reactive)
 - **Resilience**: Resilience4j (Circuit Breaker, Retry, Timeout)
