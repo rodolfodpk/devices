@@ -19,7 +19,8 @@ IoT device management system built with Spring Boot 3.5.7 and reactive programmi
 
 ### Prerequisites
 
-- Java 25, Maven 3.9+, Docker & Docker Compose
+- **For Development**: Java 25, Maven 3.9+, Docker & Docker Compose
+- **For Testing Only**: Java 25, Maven 3.9+ (Testcontainers provides PostgreSQL automatically)
 
 ### Running the Application
 
@@ -30,7 +31,7 @@ make start
 # Start application with observability stack (Prometheus + Grafana)
 make start-obs
 
-# Run all tests
+# Run all tests (uses Testcontainers, no Docker Compose needed)
 make test
 
 # Stop application
@@ -53,7 +54,7 @@ make stop
 make help       # Show all available commands
 make start      # Start PostgreSQL and application
 make start-obs  # Start with observability stack
-make test       # Run all tests (48 tests, ~11 seconds)
+make test       # Run all tests (68 tests, ~11 seconds, uses Testcontainers)
 make stop       # Stop all services
 make logs       # Show application logs
 ```
@@ -72,7 +73,7 @@ make logs       # Show application logs
 - ✅ **Resilience Patterns**: Circuit breakers, retries, timeouts
 - ✅ **Observability**: Structured logging, metrics, dashboards
 - ✅ **API Documentation**: Auto-generated Swagger UI
-- ✅ **Testing**: 48 tests covering domain, repository, service, controller, and E2E flows
+- ✅ **Testing**: 68 tests (Testcontainers, no Docker Compose needed)
 - ✅ **Performance Testing**: K6 load, stress, and spike tests
 
 ## Domain Model
