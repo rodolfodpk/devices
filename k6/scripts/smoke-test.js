@@ -28,7 +28,7 @@ export default function () {
   }
   // 25%: Get devices by state
   else {
-    const states = ['AVAILABLE', 'IN_USE'];
+    const states = ['AVAILABLE', 'IN_USE', 'INACTIVE'];
     const state = states[Math.floor(Math.random() * states.length)];
     getDevicesByState(state);
   }

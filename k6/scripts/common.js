@@ -191,6 +191,14 @@ export function getDeviceState(id) {
   return null;
 }
 
+// Device states
+const STATES = ['AVAILABLE', 'IN_USE', 'INACTIVE'];
+
+// Helper function to get a random device state
+export function randomDeviceState() {
+  return STATES[Math.floor(Math.random() * STATES.length)];
+}
+
 // Helper function to change device state
 export function changeDeviceState(id, state) {
   const payload = JSON.stringify({

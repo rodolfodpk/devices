@@ -17,8 +17,17 @@ public class DeviceFixture {
         return device.withState(DeviceState.IN_USE);
     }
     
+    public static Device createInactiveDevice() {
+        Device device = new Device("Old Device", "Generic");
+        return device.withState(DeviceState.INACTIVE);
+    }
+    
     public static Device createAvailableDevice(String name, String brand) {
         return new Device(name, brand);
+    }
+    
+    public static Device createInactiveDevice(String name, String brand) {
+        return new Device(name, brand).withState(DeviceState.INACTIVE);
     }
     
     public static Device createDeviceWithState(String name, String brand, DeviceState state) {

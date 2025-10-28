@@ -43,5 +43,9 @@ public record Device(
     public boolean isInUse() {
         return state == DeviceState.IN_USE;
     }
+    
+    public boolean isDeletable() {
+        return state == DeviceState.AVAILABLE;
+    }
 }
 

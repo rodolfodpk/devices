@@ -82,6 +82,19 @@ Package-per-layer architecture with comprehensive integration tests:
 - **Repository**: Database access with Resilience4j transformers
 - **Domain**: Entities and business rules
 
+## Domain Model
+
+**Device States:**
+- `AVAILABLE` - Device is available for use
+- `IN_USE` - Device is currently being used
+- `INACTIVE` - Device is no longer active in the system
+
+**Domain Rules:**
+- Creation time cannot be updated
+- Name and brand cannot be updated if device is IN_USE
+- Devices in IN_USE or INACTIVE state cannot be deleted
+- INACTIVE devices can be updated (to allow reactivation)
+
 ## Resilience Patterns
 
 Layered timeout strategy ensures fast failure:

@@ -87,9 +87,9 @@ public class DeviceService {
         return deviceRepository.findById(id)
                 .switchIfEmpty(Mono.error(new RuntimeException("Device not found")))
                 .flatMap(device -> {
-                    if (device.isInUse()) {
+                    if (!device.isDeletable()) {
                         return Mono.error(new DeviceDeletionException(
-                            "Cannot delete device in use"
+                            "Cannot delete device that is in use or inactive"
                         ));
                     }
                     return deviceRepository.deleteById(id);

@@ -2,6 +2,7 @@ package com.rdpk.device.domain;
 
 public enum DeviceState {
     AVAILABLE,
-    IN_USE
+    IN_USE,
+    INACTIVE
 }
 
