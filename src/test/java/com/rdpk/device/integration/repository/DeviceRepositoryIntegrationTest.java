@@ -5,11 +5,9 @@ import com.rdpk.device.domain.Device;
 import com.rdpk.device.domain.DeviceState;
 import com.rdpk.device.fixture.DeviceFixture;
 import com.rdpk.device.repository.DeviceRepository;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.r2dbc.core.DatabaseClient;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -23,17 +21,7 @@ class DeviceRepositoryIntegrationTest extends AbstractIntegrationTest {
     @Autowired
     private DeviceRepository deviceRepository;
     
-    @Autowired
-    private DatabaseClient databaseClient;
-    
-    @BeforeEach
-    void setUp() {
-        // Clean database before each test
-        databaseClient.sql("DELETE FROM devices")
-                .fetch()
-                .rowsUpdated()
-                .block();
-    }
+    // databaseClient is inherited from AbstractIntegrationTest
     
     @Test
     @DisplayName("Should save a new device and return it with generated ID")

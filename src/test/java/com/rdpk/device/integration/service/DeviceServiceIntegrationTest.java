@@ -9,11 +9,9 @@ import com.rdpk.device.exception.DeviceUpdateException;
 import com.rdpk.device.fixture.DeviceFixture;
 import com.rdpk.device.repository.DeviceRepository;
 import com.rdpk.device.service.DeviceService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.r2dbc.core.DatabaseClient;
 import reactor.test.StepVerifier;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -27,17 +25,7 @@ class DeviceServiceIntegrationTest extends AbstractIntegrationTest {
     @Autowired
     private DeviceRepository deviceRepository;
     
-    @Autowired
-    private DatabaseClient databaseClient;
-    
-    @BeforeEach
-    void setUp() {
-        // Database cleanup - Spring Test manages context, container starts before tests
-        databaseClient.sql("DELETE FROM devices")
-                .fetch()
-                .rowsUpdated()
-                .block();
-    }
+    // databaseClient is inherited from AbstractIntegrationTest
     
     @Test
     @DisplayName("Should create a new device")

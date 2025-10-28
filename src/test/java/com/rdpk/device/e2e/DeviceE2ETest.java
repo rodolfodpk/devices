@@ -5,22 +5,16 @@ import com.rdpk.device.domain.Device;
 import com.rdpk.device.domain.DeviceState;
 import com.rdpk.device.fixture.DeviceFixture;
 import com.rdpk.device.repository.DeviceRepository;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.MediaType;
-import org.springframework.r2dbc.core.DatabaseClient;
-import org.springframework.test.web.reactive.server.WebTestClient;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("Device E2E Tests")
 class DeviceE2ETest extends AbstractIntegrationTest {
-    
-    @Autowired
-    private WebTestClient webTestClient;
     
     @LocalServerPort
     private int port;
@@ -28,18 +22,7 @@ class DeviceE2ETest extends AbstractIntegrationTest {
     @Autowired
     private DeviceRepository deviceRepository;
     
-    @Autowired
-    private DatabaseClient databaseClient;
-    
-    @BeforeEach
-    void setUp() {
-        // WebTestClient is auto-configured by Spring Boot Test
-        // Database cleanup - Spring Test manages context, container starts before tests
-        databaseClient.sql("DELETE FROM devices")
-                .fetch()
-                .rowsUpdated()
-                .block();
-    }
+    // databaseClient and webTestClient are inherited from AbstractIntegrationTest
     
     @Test
     @DisplayName("Complete device lifecycle: create → use → update → release → delete")
