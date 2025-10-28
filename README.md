@@ -2,7 +2,7 @@
 
 ![CI](https://github.com/rodolfodpk/devices/workflows/CI/badge.svg)
 [![codecov](https://codecov.io/github/rodolfodpk/devices/graph/badge.svg?token=9XOKJB6039)](https://codecov.io/github/rodolfodpk/devices)
-![License](https://img.shields.io/badge/license-Copyright-orange)
+![License](https://img.shields.io/badge/license-MIT-green)
 
 IoT device management system built with Spring Boot 3.5.7 and reactive programming (Spring WebFlux).
 
@@ -90,4 +90,4 @@ make logs       # Show application logs
 
 ## License
 
-Copyright © 2025
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
