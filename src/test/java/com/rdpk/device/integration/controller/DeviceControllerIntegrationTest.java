@@ -66,7 +66,11 @@ class DeviceControllerIntegrationTest extends AbstractIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(requestBody)
                 .exchange()
-                .expectStatus().isBadRequest();
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.error").isEqualTo("VALIDATION_ERROR")
+                .jsonPath("$.message").exists()
+                .jsonPath("$.timestamp").exists();
     }
     
     @Test
@@ -149,7 +153,11 @@ class DeviceControllerIntegrationTest extends AbstractIntegrationTest {
         webTestClient.get()
                 .uri("/api/v1/devices/999")
                 .exchange()
-                .expectStatus().isNotFound();
+                .expectStatus().isNotFound()
+                .expectBody()
+                .jsonPath("$.error").isEqualTo("NOT_FOUND")
+                .jsonPath("$.message").exists()
+                .jsonPath("$.timestamp").exists();
     }
     
     @Test
@@ -197,7 +205,11 @@ class DeviceControllerIntegrationTest extends AbstractIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(requestBody)
                 .exchange()
-                .expectStatus().isBadRequest();
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.error").isEqualTo("UPDATE_ERROR")
+                .jsonPath("$.message").exists()
+                .jsonPath("$.timestamp").exists();
     }
     
     @Test
@@ -216,7 +228,11 @@ class DeviceControllerIntegrationTest extends AbstractIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(requestBody)
                 .exchange()
-                .expectStatus().isNotFound();
+                .expectStatus().isNotFound()
+                .expectBody()
+                .jsonPath("$.error").isEqualTo("NOT_FOUND")
+                .jsonPath("$.message").exists()
+                .jsonPath("$.timestamp").exists();
     }
     
     @Test
@@ -249,7 +265,11 @@ class DeviceControllerIntegrationTest extends AbstractIntegrationTest {
         webTestClient.delete()
                 .uri("/api/v1/devices/{id}", inUse.id())
                 .exchange()
-                .expectStatus().isBadRequest();
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.error").isEqualTo("DELETION_ERROR")
+                .jsonPath("$.message").exists()
+                .jsonPath("$.timestamp").exists();
     }
     
     @Test
@@ -259,7 +279,11 @@ class DeviceControllerIntegrationTest extends AbstractIntegrationTest {
         webTestClient.delete()
                 .uri("/api/v1/devices/999")
                 .exchange()
-                .expectStatus().isNotFound();
+                .expectStatus().isNotFound()
+                .expectBody()
+                .jsonPath("$.error").isEqualTo("NOT_FOUND")
+                .jsonPath("$.message").exists()
+                .jsonPath("$.timestamp").exists();
     }
 }
 
