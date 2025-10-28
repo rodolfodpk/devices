@@ -52,50 +52,20 @@ make test
 - **Grafana**: http://localhost:3000 (admin/admin)
 - **Prometheus UI**: http://localhost:9090
 
-### Common Commands
+### Quick Commands
 
-#### Application Management
 ```bash
-make start       # Start PostgreSQL and application
-make start-obs   # Start with observability stack (Prometheus + Grafana)
-make start-k6    # Start application with K6 testing profile
+make start       # Start application with PostgreSQL
+make test        # Run all tests (68 tests, uses Testcontainers)
 make stop        # Stop all services
-make restart     # Restart application and PostgreSQL
 make logs        # Show application logs
-make health      # Check application health status
 ```
 
-#### Testing
-```bash
-make test        # Run all tests (68 tests, ~11 seconds, uses Testcontainers)
-```
-
-#### Observability
-```bash
-make grafana     # Open Grafana dashboard
-make prometheus  # Open Prometheus UI
-make metrics     # View application metrics
-```
-
-#### Development
-```bash
-make clean       # Clean build artifacts and containers
-make build       # Build the application
-make setup       # Initial setup (clean + build + start)
-```
-
-#### K6 Performance Testing
-```bash
-make k6-smoke    # Smoke test (5 VUs, 1 minute)
-make k6-load     # Load test (50 VUs, 9 minutes)
-make k6-stress   # Stress test (finds breaking point)
-make k6-spike    # Spike test (sudden traffic surge)
-```
-
-Run `make help` to see all available commands.
+See **[Development Guide](docs/DEVELOPMENT.md)** for all available commands and development workflows.
 
 ## Documentation
 
+- **[Development Guide](docs/DEVELOPMENT.md)** - Complete development commands and workflows
 - **[Architecture](docs/ARCHITECTURE.md)** - Package structure and dependency rules
 - **[Resilience](docs/RESILIENCE.md)** - Circuit Breaker, Retry, and Timeout patterns
 - **[Testing Guide](docs/TESTING.md)** - Test strategy and coverage
