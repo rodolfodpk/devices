@@ -1,4 +1,4 @@
-package com.rdpk.features.device.create;
+package com.rdpk.device.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

@@ -1,6 +1,6 @@
-package com.rdpk.features.device.create;
+package com.rdpk.device.dto;
 
-import com.rdpk.features.device.domain.Device;
+import com.rdpk.device.domain.Device;
 import java.time.LocalDateTime;
 
 public record CreateDeviceResponse(

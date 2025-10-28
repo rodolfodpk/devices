@@ -1,7 +1,7 @@
-package com.rdpk.features.device.repository;
+package com.rdpk.device.repository;
 
-import com.rdpk.features.device.domain.Device;
-import com.rdpk.features.device.domain.DeviceState;
+import com.rdpk.device.domain.Device;
+import com.rdpk.device.domain.DeviceState;
 import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;

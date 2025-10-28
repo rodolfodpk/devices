@@ -1,4 +1,4 @@
-package com.rdpk.features.device.domain;
+package com.rdpk.device.domain;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;

@@ -1,4 +1,4 @@
-package com.rdpk.features.device.update;
+package com.rdpk.device.dto;
 
 import jakarta.validation.constraints.Size;
 
