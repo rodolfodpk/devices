@@ -13,7 +13,7 @@ IoT device management system built with Spring Boot 3.5.7 and reactive programmi
 - **Database**: PostgreSQL 17.2 (accessed via R2DBC)
 - **Resilience**: Resilience4j (Circuit Breaker, Retry, Timeout)
 - **Observability**: Prometheus, Grafana, Spring Boot Actuator
-- **Testing**: JUnit 5, Testcontainers, K6
+- **Testing**: JUnit 5.12.2, Testcontainers, K6
 
 ## Quick Start
 
