@@ -58,12 +58,31 @@ src/
 │   ├── java/com/rdpk/
 │   │   ├── Application.java          # Main application class
 │   │   ├── config/                    # Configuration classes
-│   │   └── features/                  # Domain-driven features
+│   │   └── device/                    # Device feature (Package-per-layer)
+│   │       ├── controller/            # REST API controllers
+│   │       ├── service/               # Business logic services
+│   │       ├── repository/            # Database access layer
+│   │       ├── domain/                # Domain models (entities, enums)
+│   │       ├── dto/                   # Data Transfer Objects
+│   │       └── exception/             # Custom exceptions
 │   └── resources/
 │       ├── application.properties     # Main configuration
 │       └── db/migration/              # Flyway migrations
 └── test/
-    └── java/com/rdpk/                 # Test classes
+    ├── java/com/rdpk/
+    │   ├── device/
+    │   │   ├── domain/                # Domain unit tests
+    │   │   ├── integration/
+    │   │   │   ├── repository/        # Repository integration tests
+    │   │   │   ├── service/           # Service integration tests
+    │   │   │   └── controller/        # Controller integration tests
+    │   │   ├── e2e/                   # End-to-end tests
+    │   │   └── fixture/               # Test data builders
+    │   ├── AbstractIntegrationTest.java # Base test class with Testcontainers
+    │   └── config/
+    │       └── SharedPostgresContainer.java # Singleton container
+    └── resources/
+        └── application-test.properties
 ```
 
 ## Development
@@ -81,17 +100,45 @@ make clean      # Clean build artifacts and containers
 
 ## Testing
 
-### Unit & Integration Tests
+### Test Strategy
+
+The project uses **package-per-layer** architecture with comprehensive integration and E2E tests:
+
+- ✅ **Domain Tests** (7 tests) - Domain model validation
+- ✅ **Repository Tests** (9 tests) - Database operations with real PostgreSQL
+- ✅ **Service Tests** (15 tests) - Business logic with real repository  
+- ✅ **Controller Tests** (13 tests) - HTTP endpoints with WebTestClient
+- ✅ **E2E Tests** (4 tests) - Complete application flows
+- **Total: 48 tests, 0 failures**
+
+All integration tests use **Testcontainers** for real PostgreSQL database - **NO MOCKS**.
+
+### Running Tests
 
 ```bash
+# Run all tests (~11 seconds)
 mvn test
-```
 
-### E2E Tests
-
-```bash
+# Run with coverage report
 mvn verify
+
+# Run specific test class
+mvn test -Dtest=DeviceServiceIntegrationTest
 ```
+
+### Test Performance
+
+- **Execution Time**: ~11 seconds for 48 tests
+- **Container Reuse**: Shared PostgreSQL container across all tests
+- **Isolation**: Database cleanup via TRUNCATE in @BeforeEach
+- **No @DirtiesContext**: Using @TestInstance(PER_CLASS) for performance
+
+### Test Coverage
+
+Tests cover domain validation rules:
+- ✅ Creation time immutability
+- ✅ In-use device restrictions (name/brand updates blocked)
+- ✅ Deletion protection for in-use devices
 
 ## Database
 
