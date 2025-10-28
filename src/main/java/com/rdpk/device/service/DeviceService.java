@@ -4,6 +4,7 @@ import com.rdpk.device.domain.Device;
 import com.rdpk.device.domain.DeviceState;
 import com.rdpk.device.dto.UpdateDeviceRequest;
 import com.rdpk.device.exception.DeviceDeletionException;
+import com.rdpk.device.exception.DeviceNotFoundException;
 import com.rdpk.device.exception.DeviceUpdateException;
 import com.rdpk.device.repository.DeviceRepository;
 import org.springframework.stereotype.Service;
@@ -26,7 +27,7 @@ public class DeviceService {
     
     public Mono<Device> getDeviceById(Long id) {
         return deviceRepository.findById(id)
-                .switchIfEmpty(Mono.error(new RuntimeException("Device not found")));
+                .switchIfEmpty(Mono.error(new DeviceNotFoundException("Device not found")));
     }
     
     public Flux<Device> getAllDevices() {
@@ -49,7 +50,7 @@ public class DeviceService {
     
     public Mono<Device> updateDevice(Long id, UpdateDeviceRequest request) {
         return deviceRepository.findById(id)
-                .switchIfEmpty(Mono.error(new RuntimeException("Device not found")))
+                .switchIfEmpty(Mono.error(new DeviceNotFoundException("Device not found")))
                 .flatMap(device -> {
                     if (device.isInUse() && (request.name() != null || request.brand() != null)) {
                         return Mono.error(new DeviceUpdateException(
@@ -85,7 +86,7 @@ public class DeviceService {
     
     public Mono<Void> deleteDevice(Long id) {
         return deviceRepository.findById(id)
-                .switchIfEmpty(Mono.error(new RuntimeException("Device not found")))
+                .switchIfEmpty(Mono.error(new DeviceNotFoundException("Device not found")))
                 .flatMap(device -> {
                     if (!device.isDeletable()) {
                         return Mono.error(new DeviceDeletionException(

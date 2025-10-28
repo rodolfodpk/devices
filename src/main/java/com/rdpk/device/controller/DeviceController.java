@@ -5,8 +5,6 @@ import com.rdpk.device.dto.CreateDeviceResponse;
 import com.rdpk.device.dto.GetDeviceResponse;
 import com.rdpk.device.dto.UpdateDeviceRequest;
 import com.rdpk.device.dto.UpdateDeviceResponse;
-import com.rdpk.device.exception.DeviceDeletionException;
-import com.rdpk.device.exception.DeviceUpdateException;
 import com.rdpk.device.service.DeviceService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -63,10 +61,7 @@ public class DeviceController {
     public Mono<ResponseEntity<GetDeviceResponse>> getDeviceById(@PathVariable Long id) {
         return deviceService.getDeviceById(id)
                 .map(GetDeviceResponse::from)
-                .map(ResponseEntity::ok)
-                .onErrorResume(RuntimeException.class, __ ->
-                    Mono.just(ResponseEntity.notFound().build())
-                );
+                .map(ResponseEntity::ok);
     }
     
     @PutMapping("/{id}")
@@ -75,26 +70,13 @@ public class DeviceController {
             @RequestBody UpdateDeviceRequest request) {
         return deviceService.updateDevice(id, request)
                 .map(UpdateDeviceResponse::from)
-                .map(ResponseEntity::ok)
-                .onErrorResume(DeviceUpdateException.class, __ ->
-                    Mono.just(ResponseEntity.badRequest()
-                            .body(new UpdateDeviceResponse(null, null, null, null, null)))
-                )
-                .onErrorResume(RuntimeException.class, __ ->
-                    Mono.just(ResponseEntity.notFound().build())
-                );
+                .map(ResponseEntity::ok);
     }
     
     @DeleteMapping("/{id}")
     public Mono<ResponseEntity<Void>> deleteDevice(@PathVariable Long id) {
         return deviceService.deleteDevice(id)
-                .then(Mono.just(ResponseEntity.noContent().<Void>build()))
-                .onErrorResume(DeviceDeletionException.class, __ ->
-                    Mono.just(ResponseEntity.badRequest().build())
-                )
-                .onErrorResume(RuntimeException.class, __ ->
-                    Mono.just(ResponseEntity.notFound().build())
-                );
+                .then(Mono.just(ResponseEntity.noContent().<Void>build()));
     }
 }
 
