@@ -8,7 +8,7 @@ A comprehensive IoT device management system built with Spring Boot 3.5.6 and re
 
 ## Technology Stack
 
-- **Framework**: Spring Boot 3.5.6 (Java 21)
+- **Framework**: Spring Boot 3.5.6 (Java 25)
 - **Reactive Stack**: Spring WebFlux, Project Reactor, R2DBC
 - **Database**: PostgreSQL 17.2 (Reactive)
 - **Build Tool**: Maven 3.9+
@@ -28,7 +28,7 @@ A comprehensive IoT device management system built with Spring Boot 3.5.6 and re
 
 ### Prerequisites
 
-- Java 21
+- Java 25
 - Maven 3.9+
 - Docker & Docker Compose
 - PostgreSQL 17.2+ (or use Docker Compose)
