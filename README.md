@@ -31,11 +31,15 @@ make start
 # Start application with observability stack (Prometheus + Grafana)
 make start-obs
 
-# Run all tests (uses Testcontainers, no Docker Compose needed)
-make test
-
 # Stop application
 make stop
+```
+
+### Running Tests
+
+```bash
+# Run all tests (uses Testcontainers, no Docker Compose needed)
+make test
 ```
 
 ### Available URLs
