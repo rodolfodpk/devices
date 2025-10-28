@@ -50,14 +50,45 @@ make stop
 
 ### Common Commands
 
+#### Application Management
 ```bash
-make help       # Show all available commands
-make start      # Start PostgreSQL and application
-make start-obs  # Start with observability stack
-make test       # Run all tests (68 tests, ~11 seconds, uses Testcontainers)
-make stop       # Stop all services
-make logs       # Show application logs
+make start       # Start PostgreSQL and application
+make start-obs   # Start with observability stack (Prometheus + Grafana)
+make start-k6    # Start application with K6 testing profile
+make stop        # Stop all services
+make restart     # Restart application and PostgreSQL
+make logs        # Show application logs
+make health      # Check application health status
 ```
+
+#### Testing
+```bash
+make test        # Run all tests (68 tests, ~11 seconds, uses Testcontainers)
+```
+
+#### Observability
+```bash
+make grafana     # Open Grafana dashboard
+make prometheus  # Open Prometheus UI
+make metrics     # View application metrics
+```
+
+#### Development
+```bash
+make clean       # Clean build artifacts and containers
+make build       # Build the application
+make setup       # Initial setup (clean + build + start)
+```
+
+#### K6 Performance Testing
+```bash
+make k6-smoke    # Smoke test (5 VUs, 1 minute)
+make k6-load     # Load test (50 VUs, 9 minutes)
+make k6-stress   # Stress test (finds breaking point)
+make k6-spike    # Spike test (sudden traffic surge)
+```
+
+Run `make help` to see all available commands.
 
 ## Documentation
 
