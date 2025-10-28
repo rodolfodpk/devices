@@ -1,0 +1,61 @@
+{
+  "dashboard": {
+    "title": "IoT Devices - Resilience4j Metrics",
+    "tags": ["devices", "resilience4j", "circuit-breaker"],
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Circuit Breaker State",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "resilience4j_circuitbreaker_state{name=\"devices\"}",
+            "legendFormat": "State"
+          }
+        ],
+        "gridPos": {"h": 6, "w": 8, "x": 0, "y": 0}
+      },
+      {
+        "id": 2,
+        "title": "Circuit Breaker Calls",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(resilience4j_circuitbreaker_calls_total[5m])",
+            "legendFormat": "{{kind}}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 6}
+      },
+      {
+        "id": 3,
+        "title": "Circuit Breaker Failure Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(resilience4j_circuitbreaker_calls_total{kind=\"failed\"}[5m]) / rate(resilience4j_circuitbreaker_calls_total[5m])",
+            "legendFormat": "Failure Rate"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 6}
+      },
+      {
+        "id": 4,
+        "title": "Retry Attempts",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "resilience4j_retry_calls_total",
+            "legendFormat": "{{kind}}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 14}
+      }
+    ],
+    "schemaVersion": 27,
+    "version": 0,
+    "refresh": "10s"
+  }
+}
+

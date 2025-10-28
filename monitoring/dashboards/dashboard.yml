@@ -10,4 +10,5 @@ providers:
     allowUiUpdates: true
     options:
       path: /etc/grafana/provisioning/dashboards
+      foldersFromFilesStructure: true
 
