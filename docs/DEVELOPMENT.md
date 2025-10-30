@@ -25,8 +25,11 @@ open http://localhost:8080/swagger-ui.html
 make start          # Start PostgreSQL and the application
 make start-obs      # Start with observability stack (Prometheus + Grafana)
 make start-k6       # Start application with K6 testing profile
+make start-k6-obs   # Start with observability stack + K6 profile (for monitoring K6 tests)
 make start-resilience # Start with resilience-test profile
 ```
+
+**Note:** `make start-k6-obs` automatically runs `docker-compose down -v` to clean all volumes before starting, ensuring a fresh database state for K6 performance testing.
 
 #### Managing the Application
 
@@ -79,7 +82,9 @@ make k6-production-simulation # Production-like testing sequence
 
 ```bash
 # Start observability stack
-make start-obs      # Start application with Prometheus and Grafana
+make start-obs      # Start application with Prometheus and Grafana (prod profile)
+make start-k6-obs   # Start with observability stack + K6 profile (for monitoring K6 tests)
+                    # Automatically cleans volumes (docker-compose down -v) for fresh state
 
 # Access dashboards
 make grafana        # Open Grafana dashboard (http://localhost:3000)

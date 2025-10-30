@@ -11,6 +11,8 @@ help:
 	@echo "Application Management:"
 	@echo "  start          - Start PostgreSQL and the application"
 	@echo "  start-k6       - Start application with k6 testing profile"
+	@echo "  start-obs      - Start with observability stack (Prometheus + Grafana)"
+	@echo "  start-k6-obs   - Start with observability stack + K6 profile (for monitoring K6 tests)"
 	@echo "  stop           - Stop the application and PostgreSQL"
 	@echo "  restart        - Restart the application and PostgreSQL"
 	@echo "  logs           - Show application logs"
@@ -104,6 +106,35 @@ start-obs:
 	@echo "📍 Application: http://localhost:8080"
 	@echo "📍 Grafana: http://localhost:3000 (admin/admin)"
 	@echo "📍 Prometheus: http://localhost:9090"
+
+start-k6-obs:
+	@echo "🚀 Starting IoT Devices Management System with Observability Stack for K6 Testing..."
+	@echo "1. Stopping and cleaning all containers and volumes (fresh state)..."
+	docker-compose down -v
+	@echo "2. Starting PostgreSQL, Prometheus, and Grafana..."
+	docker-compose up -d
+	@echo "3. Waiting for PostgreSQL to be ready..."
+	sleep 10
+	@echo "4. Starting the application with K6 profile..."
+	mvn spring-boot:run -Dspring-boot.run.profiles=k6 &
+	@echo "5. Waiting for application to be ready..."
+	@echo "   (Checking health endpoint...)"
+	@for i in $$(seq 1 30); do \
+		if curl -fsS http://localhost:8080/actuator/health > /dev/null 2>&1; then \
+			echo "✅ Application is healthy!"; \
+			break; \
+		fi; \
+		sleep 2; \
+	done
+	@echo "✅ Services started!"
+	@echo "📍 Application: http://localhost:8080"
+	@echo "📍 Grafana: http://localhost:3000 (admin/admin)"
+	@echo "📍 Prometheus: http://localhost:9090"
+	@echo ""
+	@echo "💡 You can now run K6 tests:"
+	@echo "   make k6-smoke    # Quick smoke test"
+	@echo "   make k6-load     # Load test"
+	@echo "   make k6-test     # All tests"
 
 grafana:
 	@echo "📊 Opening Grafana..."
@@ -213,7 +244,7 @@ db-reset:
 
 db-clean-quick:
 	@echo "🧹 Quick database cleanup (keeping application running)..."
-	@docker exec votacao-postgres psql -U votacao -d votacao -c "TRUNCATE TABLE agendas, voting_sessions, votes RESTART IDENTITY CASCADE;" || echo "⚠️ Database cleanup failed, but continuing..."
+	@docker exec devices-postgres psql -U devices -d devices -c "TRUNCATE TABLE devices RESTART IDENTITY CASCADE;" || echo "⚠️ Database cleanup failed, but continuing..."
 	@echo "✅ Database cleaned"
 
 # K6 Test with Database Reset

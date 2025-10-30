@@ -24,47 +24,59 @@ make k6-smoke
 **Sample Terminal Output:**
 ```
 💨 Running k6 smoke test...
-          /\      |‾‾| /‾‾/   /‾‾/
-     /\  /  \     |  |/  /   /  /
-    /  \/    \    |     (   /   ‾‾\
-   /          \   |  |\  \ |  (‾)  |
-  / __________ \  |__| \__\ \_____/ .io
 
-  execution: local
-     script: k6/scripts/smoke-test.js
-     output: -
+         /\      Grafana   /‾‾/  
+    /\  /  \     |\  __   /  /   
+   /  \/    \    | |/ /  /   ‾‾\ 
+  /          \   |   (  |  (‾)  |
+ / __________ \  |_|\_\  \_____/ 
 
-  scenarios: (100.00%) 1 scenario, 5 max VUs, 1m0s max duration (incl. graceful stop):
-           * default: Up to 5 VUs for 1m0s over 3 stages (gracefulRampDown: 30s, gracefulStop: 30s)
+     execution: local
+        script: k6/scripts/smoke-test.js
+        output: -
 
-     ✗ create device status is 201
-      ↳  0%    — ✓ 0   ✗ 0
+     scenarios: (100.00%) 1 scenario, 5 max VUs, 1m30s max duration
+              * default: Up to 5 looping VUs for 1m0s over 2 stages
 
-     ✓ get all devices status is 200
-     ✓ get all devices returns array
-     ✓ get by brand status is 200
-     ✓ get by brand returns array
-     ✓ get by state status is 200
-     ✓ get by state returns array
+  █ THRESHOLDS 
 
-     checks.........................: 100.00% ✓ 1204  ✗ 0
-     data_received..................: 234 kB  3.9 kB/s
-     data_sent......................: 86 kB   1.4 kB/s
-     http_req_blocked...............: avg=328.82µs min=3µs    med=16µs   max=14.47ms p(90)=28µs   p(95)=48µs
-     http_req_connecting............: avg=188.69µs min=0s     med=0s     max=8.53ms  p(90)=0s     p(95)=0s
-     http_req_duration..............: avg=8.18ms   min=2.05ms  med=7.15ms max=49.73ms p(90)=12.37ms p(95)=15.38ms
-     http_req_failed................: 0.00%   ✓ 0    ✗ 602
-     http_req_receiving.............: avg=41.13µs  min=12µs   med=37µs   max=328µs   p(90)=66µs   p(95)=89µs
-     http_req_sending...............: avg=39.47µs  min=11µs   med=36µs   max=576µs   p(90)=60µs   p(95)=82µs
-     http_req_tls_handshaking.......: avg=0s       min=0s     med=0s     max=0s     p(90)=0s     p(95)=0s
-     http_req_waiting...............: avg=8.1ms    min=2.02ms med=7.11ms max=49.49ms p(90)=12.29ms p(95)=15.27ms
-     http_reqs......................: 602     10.033627/s
-     iteration_duration.............: avg=1.01s    min=1s     med=1s     max=1.05s  p(90)=1.01s   p(95)=1.02s
-     iterations.....................: 602     10.033627/s
-     vus............................: 5       min=1   max=5
-     vus_max........................: 5       min=1   max=5
+    http_req_duration
+    ✓ 'p(95)<200' p(95)=2.12ms
+    ✓ 'p(99)<500' p(99)=3.77ms
 
-running (1m00.3s), 5/5 VUs (duration: 1m0s, passed: 0/5)
+    http_req_failed
+    ✓ 'rate<0.01' rate=0.00%
+
+  █ TOTAL RESULTS 
+
+    checks_total.......................: 361854  6030.978704/s
+    checks_succeeded...................: 100.00% 361854 out of 361854
+    checks_failed......................: 0.00%   0 out of 361854
+
+    ✓ get all devices status is 200
+    ✓ get all devices returns array
+    ✓ get by brand status is 200
+    ✓ get by brand returns array
+    ✓ get by state status is 200
+    ✓ get by state returns array
+
+    HTTP
+    http_req_duration........................................: avg=1.19ms min=606µs    med=998µs  max=64.38ms p(90)=1.71ms p(95)=2.12ms
+    http_req_failed.........................................: 0.00%  0 out of 180927
+    http_reqs................................................: 180927 3015.489352/s
+
+    EXECUTION
+    iteration_duration........................................: avg=1.23ms min=631.16µs med=1.03ms max=64.45ms p(90)=1.78ms p(95)=2.19ms
+    iterations................................................: 180927 3015.489352/s
+    vus........................................................: 5      min=1           max=5
+    vus_max....................................................: 5      min=5           max=5
+
+    NETWORK
+    data_received............................................: 13 MB  217 kB/s
+    data_sent................................................: 15 MB  253 kB/s
+
+running (1m00.0s), 0/5 VUs, 180927 complete and 0 interrupted iterations
+default ✓ [======================================] 0/5 VUs  1m0s
 ```
 
 ### 2. Load Test
@@ -90,23 +102,75 @@ make k6-load
 ```
 📊 Running k6 load test...
 
-     ✓ get all devices status is 200
-     ✓ get by brand status is 200
-     ✓ create device status is 201
-     ✓ create device has ID
-     ✓ delete device status is valid
+         /\      Grafana   /‾‾/  
+    /\  /  \     |\  __   /  /   
+   /  \/    \    | |/ /  /   ‾‾\ 
+  /          \   |   (  |  (‾)  |
+ / __________ \  |_|\_\  \_____/ 
 
-     checks.........................: 100.00% ✓ 8762  ✗ 0
-     data_received..................: 3.4 MB  11 kB/s
-     data_sent......................: 1.5 MB  4.9 kB/s
-     http_req_duration..............: avg=28.45ms  min=2.12ms  med=25.47ms max=312.18ms p(90)=45.23ms p(95)=55.89ms
-     http_req_failed................: 0.00%   ✓ 0     ✗ 4381
-     http_reqs......................: 4381    14.593079/s
-     iterations.....................: 876     2.916806/s
-     vus............................: 50      min=1   max=50
-     vus_max........................: 50      min=1   max=50
+     execution: local
+        script: k6/scripts/load-test.js
+        output: -
 
-running (5m00.2s), 50/50 VUs (duration: 5m0s, passed: 0/50)
+     scenarios: (100.00%) 1 scenario, 50 max VUs, 5m30s max duration
+              * default: Up to 50 looping VUs for 5m0s over 2 stages
+
+  █ THRESHOLDS 
+
+    http_req_duration
+    ✓ 'p(95)<500' p(95)=28.89ms
+    ✓ 'p(99)<1000' p(99)=71.9ms
+
+      {name:CreateDevice}
+      ✓ 'p(95)<300' p(95)=19.42ms
+
+      {name:GetAllDevices}
+      ✓ 'p(95)<200' p(95)=30.95ms
+
+      {name:GetDeviceById}
+      ✓ 'p(95)<100' p(95)=17.86ms
+
+    http_req_failed
+    ✓ 'rate<0.01' rate=0.00%
+
+  █ TOTAL RESULTS 
+
+    checks_total.......................: 26024   86.553491/s
+    checks_succeeded...................: 100.00% 26024 out of 26024
+    checks_failed......................: 0.00%   0 out of 26024
+
+    ✓ get all devices status is 200
+    ✓ create device status is 201
+    ✓ create device has ID
+    ✓ delete device status is valid
+    ✓ get by ID status is 200
+    ✓ get by ID returns device
+    ✓ get by brand status is 200
+    ✓ get by brand returns array
+    ✓ update device status is valid
+    ✓ update device returns device or error
+
+    HTTP
+    http_req_duration........................................: avg=12.63ms min=802µs  med=10.45ms max=192.4ms  p(90)=22.57ms p(95)=28.89ms
+      { expected_response:true }............................: avg=12.63ms min=802µs  med=10.45ms max=192.4ms  p(90)=22.57ms p(95)=28.89ms
+      { name:CreateDevice }.................................: avg=8.16ms  min=1.2ms  med=5.45ms  max=140.89ms p(90)=14.72ms p(95)=19.42ms
+      { name:GetAllDevices }................................: avg=15.73ms min=2.29ms med=13.12ms max=192.4ms  p(90)=24.77ms p(95)=30.95ms
+      { name:GetDeviceById }................................: avg=6.57ms  min=802µs  med=3.92ms  max=143.95ms p(90)=12.72ms p(95)=17.86ms
+    http_req_failed.........................................: 0.00%  0 out of 13328
+    http_reqs................................................: 13328  44.327733/s
+
+    EXECUTION
+    iteration_duration........................................: avg=1.01s   min=1s     med=1.01s   max=1.19s    p(90)=1.02s   p(95)=1.03s
+    iterations................................................: 13328  44.327733/s
+    vus........................................................: 50     min=1          max=50
+    vus_max....................................................: 50     min=50          max=50
+
+    NETWORK
+    data_received............................................: 299 MB 995 kB/s
+    data_sent................................................: 1.4 MB 4.5 kB/s
+
+running (5m00.7s), 00/50 VUs, 13328 complete and 0 interrupted iterations
+default ✓ [======================================] 00/50 VUs  5m0s
 ```
 
 ### 3. Stress Test
@@ -199,10 +263,15 @@ make k6-test        # Run all K6 tests in sequence
 
 To monitor system behavior during K6 tests:
 
-1. **Start observability stack:**
+1. **Start observability stack with K6 profile:**
    ```bash
-   make start-obs
+   make start-k6-obs
    ```
+   This automatically:
+   - Cleans all volumes (`docker-compose down -v`) for fresh database state
+   - Starts PostgreSQL, Prometheus, and Grafana
+   - Starts the application with K6 testing profile
+   - Waits for application health check
 
 2. **Open Grafana dashboards:**
    ```bash
@@ -224,22 +293,213 @@ K6 tests run against the application with `application-k6.properties` profile, w
 - Extended timeouts for high load
 - No rate limiter restrictions
 
+## Understanding K6 Terminal Output
+
+When you run a K6 test, you'll see structured output in your terminal. Here's how to interpret it:
+
+### Output Structure
+
+K6 output consists of several sections:
+
+1. **Header:** K6/Grafana logo and basic execution info
+2. **Scenarios:** Test configuration and stages
+3. **Thresholds:** Pass/fail status of defined thresholds
+4. **Total Results:** Comprehensive metrics organized by category
+
+### Sample Output Breakdown
+
+Here's what you'll see when running a test:
+
+```
+         /\      Grafana   /‾‾/  
+    /\  /  \     |\  __   /  /   
+   /  \/    \    | |/ /  /   ‾‾\ 
+  /          \   |   (  |  (‾)  |
+ / __________ \  |_|\_\  \_____/ 
+
+     execution: local
+        script: k6/scripts/smoke-test.js
+        output: -
+
+     scenarios: (100.00%) 1 scenario, 5 max VUs, 1m30s max duration
+              * default: Up to 5 looping VUs for 1m0s over 2 stages
+```
+
+**Explanation:**
+- `execution: local` - Test runs locally (not distributed)
+- `script:` - Path to the test script
+- `scenarios:` - Number of VUs, duration, and stages configured
+
+### Thresholds Section
+
+```
+  █ THRESHOLDS 
+
+    http_req_duration
+    ✓ 'p(95)<200' p(95)=2.12ms
+    ✓ 'p(99)<500' p(99)=3.77ms
+
+    http_req_failed
+    ✓ 'rate<0.01' rate=0.00%
+```
+
+**What it means:**
+- ✓ = Threshold passed, ✗ = Threshold failed
+- Shows actual measured values vs. defined thresholds
+- Critical for understanding if your system meets performance goals
+
+### Total Results Section
+
+#### Checks Metrics
+
+```
+    checks_total.......................: 361854  6030.978704/s
+    checks_succeeded...................: 100.00% 361854 out of 361854
+    checks_failed......................: 0.00%   0 out of 361854
+```
+
+- **checks_total:** Total number of assertions (checks) executed
+- **checks_succeeded:** Percentage and count of passed checks
+- **checks_failed:** Percentage and count of failed checks
+- The number after the colon shows the rate per second
+
+#### HTTP Metrics
+
+```
+    HTTP
+    http_req_duration........................................: avg=1.19ms min=606µs    med=998µs  max=64.38ms p(90)=1.71ms p(95)=2.12ms
+    http_req_failed...........................................: 0.00%  0 out of 180927
+    http_reqs................................................: 180927 3015.489352/s
+```
+
+**Key HTTP Metrics Explained:**
+
+- **http_req_duration:** Total time for HTTP requests
+  - `avg` - Average response time
+  - `min` - Fastest request
+  - `med` - Median (p50, 50th percentile)
+  - `max` - Slowest request
+  - `p(90)` - 90th percentile (90% of requests faster than this)
+  - `p(95)` - 95th percentile (95% of requests faster than this)
+  - `p(99)` - 99th percentile (99% of requests faster than this)
+
+- **http_req_failed:** Percentage and count of failed requests
+  - Shows errors, timeouts, or non-2xx/3xx status codes
+
+- **http_reqs:** Total requests and requests per second
+  - Throughput metric
+
+#### Execution Metrics
+
+```
+    EXECUTION
+    iteration_duration........................................: avg=1.23ms min=631.16µs med=1.03ms max=64.45ms p(90)=1.78ms p(95)=2.19ms
+    iterations................................................: 180927 3015.489352/s
+    vus........................................................: 5      min=1           max=5
+    vus_max....................................................: 5      min=5           max=5
+```
+
+**Explanation:**
+
+- **iteration_duration:** Time to complete one full test iteration
+  - Includes all operations within a single VU iteration
+
+- **iterations:** Total iterations completed and rate per second
+  - One iteration = one execution of the `default` function in your test script
+
+- **vus:** Current number of active virtual users
+  - `min`/`max` show the range during the test
+
+- **vus_max:** Maximum virtual users that were active
+  - Useful for verifying the test reached the target VU count
+
+#### Network Metrics
+
+```
+    NETWORK
+    data_received...................................................: 13 MB  217 kB/s
+    data_sent.......................................................: 15 MB  253 kB/s
+```
+
+- **data_received:** Total bytes received from server and average rate
+- **data_sent:** Total bytes sent to server and average rate
+- Helps identify bandwidth usage and potential network bottlenecks
+
+### Status Line
+
+At the bottom, you'll see:
+
+```
+running (1m00.0s), 0/5 VUs, 180927 complete and 0 interrupted iterations
+default ✓ [======================================] 0/5 VUs  1m0s
+```
+
+**Reading the status line:**
+- `running (X)` - Elapsed test time
+- `0/5 VUs` - Current active VUs / Maximum VUs
+- `180927 complete` - Number of iterations completed
+- `0 interrupted` - Iterations that were interrupted (due to test stopping)
+- `default ✓` - Scenario name and completion status
+- Progress bar shows test progress
+- `1m0s` - Total test duration
+
+### Understanding Percentiles
+
+Percentiles tell you the distribution of response times:
+
+- **p50 (median):** Half of requests are faster, half are slower
+- **p90:** 90% of requests completed in this time or faster
+- **p95:** 95% of requests completed in this time or faster (commonly used SLA)
+- **p99:** 99% of requests completed in this time or faster (catches outliers)
+
+**Example:** `p(95)=28.89ms` means 95% of requests completed in 28.89ms or less.
+
+### Interpreting Results
+
+#### Good Results Indicators
+
+- ✓ All thresholds passed
+- `http_req_failed: 0.00%` - No failed requests
+- `checks_failed: 0.00%` - All assertions passed
+- Percentile values within acceptable ranges (p95 < threshold)
+
+#### Warning Signs
+
+- ✗ Failed thresholds - System not meeting performance goals
+- High `http_req_failed` rate - Requests failing or timing out
+- High `p(99)` relative to `p(95)` - Large variance (outliers)
+- `checks_failed > 0%` - Some assertions are failing
+
+#### Comparing Tests
+
+When comparing test runs:
+1. Check threshold pass/fail status
+2. Compare p95 and p99 values
+3. Monitor error rates (`http_req_failed`)
+4. Verify throughput (`http_reqs` per second)
+5. Check if VUs reached target (`vus_max`)
+
 ## Interpreting Results
 
-### Key Metrics
+### Key Metrics Summary
 
-- **http_reqs:** Total HTTP requests made
-- **http_req_duration:** Request latency (p50, p95, p99)
-- **http_req_failed:** Failure rate percentage
-- **iterations:** Number of test iterations completed
-- **vus:** Current virtual users
-- **data_received/data_sent:** Network traffic
+- **http_reqs:** Total HTTP requests made and requests per second (throughput)
+- **http_req_duration:** Request latency with percentiles (avg, min, med, max, p90, p95)
+- **http_req_failed:** Failure rate percentage and count
+- **iterations:** Number of test iterations completed and rate
+- **vus/vus_max:** Current and maximum virtual users active
+- **data_received/data_sent:** Network traffic volume and bandwidth
+- **checks_total/succeeded/failed:** Assertion results and pass rate
 
 ### Threshold Validation
 
-- **p(95) < 500ms:** 95% of requests complete in under 500ms
-- **p(99) < 1000ms:** 99% of requests complete in under 1 second
-- **rate < 0.01:** Less than 1% of requests fail
+K6 automatically validates thresholds defined in your test:
+
+- **✓ `p(95)<500` with `p(95)=28.89ms`** - 95th percentile is 28.89ms, which is under 500ms threshold ✓
+- **✓ `p(99)<1000` with `p(99)=71.9ms`** - 99th percentile is 71.9ms, which is under 1000ms threshold ✓
+- **✓ `rate<0.01` with `rate=0.00%`** - Failure rate is 0.00%, which is under 1% threshold ✓
+
+If any threshold fails, the test will exit with a non-zero status code.
 
 ## Troubleshooting
 
