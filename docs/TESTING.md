@@ -182,7 +182,7 @@ void shouldEnforceBusinessRulesForInUseDevices() {
     updateDeviceState(created.id(), DeviceState.IN_USE);
     
     // Try to update name (should fail)
-    webTestClient.put()
+    webTestClient.patch()
         .uri("/api/v1/devices/{id}", created.id())
         .bodyValue(UpdateDeviceRequest.builder()
             .name("New Camera")
@@ -244,7 +244,7 @@ HTTP endpoint tests with WebTestClient:
 - GET /api/v1/devices?brand=X
 - GET /api/v1/devices?state=Y
 - GET /api/v1/devices/{id}
-- PUT /api/v1/devices/{id}
+- PATCH /api/v1/devices/{id}
 - DELETE /api/v1/devices/{id}
 - Error handling (404, 400)
 

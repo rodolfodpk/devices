@@ -1,7 +1,5 @@
 package com.rdpk;
 
-import com.tngtech.archunit.core.domain.JavaClasses;
-import com.tngtech.archunit.core.importer.ClassFileImporter;
 import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
@@ -29,12 +27,12 @@ class DeviceArchitectureTest {
                     .should().beAnnotatedWith(Service.class);
 
     @ArchTest
-    static final ArchRule repository_implementations_should_be_annotated_with_repository =
+    static final ArchRule repository_interfaces_should_extend_reactive_crud_repository =
             classes()
                     .that().resideInAPackage("..repository..")
-                    .and().haveSimpleNameEndingWith("RepositoryImpl")
-                    .and().areNotInterfaces()
-                    .should().beAnnotatedWith(Repository.class);
+                    .and().areInterfaces()
+                    .and().haveSimpleNameEndingWith("Repository")
+                    .should().beAssignableTo(org.springframework.data.repository.reactive.ReactiveCrudRepository.class);
 
     @ArchTest
     static final ArchRule controllers_should_only_depend_on_services =
@@ -88,8 +86,8 @@ class DeviceArchitectureTest {
     static final ArchRule repositories_should_have_repository_suffix =
             classes()
                     .that().resideInAPackage("..repository..")
-                    .and().areAnnotatedWith(Repository.class)
-                    .should().haveSimpleNameEndingWith("RepositoryImpl");
+                    .and().areInterfaces()
+                    .should().haveSimpleNameEndingWith("Repository");
 
     @ArchTest
     static final ArchRule domain_should_not_have_spring_annotations =
@@ -114,5 +112,31 @@ class DeviceArchitectureTest {
                     .should().beAnnotatedWith(RestController.class)
                     .orShould().beAnnotatedWith(Service.class)
                     .orShould().beAnnotatedWith(Repository.class);
+    
+    @ArchTest
+    static final ArchRule repositories_should_not_depend_on_resilience4j =
+            noClasses()
+                    .that().resideInAPackage("..repository..")
+                    .should().dependOnClassesThat().haveFullyQualifiedName(
+                            io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry.class.getName())
+                    .orShould().dependOnClassesThat().haveFullyQualifiedName(
+                            io.github.resilience4j.retry.RetryRegistry.class.getName())
+                    .orShould().dependOnClassesThat().haveFullyQualifiedName(
+                            io.github.resilience4j.timelimiter.TimeLimiterRegistry.class.getName())
+                    .orShould().dependOnClassesThat().haveSimpleNameContaining("Resilience4j")
+                    .orShould().dependOnClassesThat().resideInAPackage("..resilience4j..");
+    
+    @ArchTest
+    static final ArchRule controllers_should_not_use_putmapping =
+            noClasses()
+                    .that().resideInAPackage("..controller..")
+                    .should().beAnnotatedWith(org.springframework.web.bind.annotation.PutMapping.class);
+    
+    @ArchTest
+    static final ArchRule controller_methods_should_not_use_putmapping =
+            noMethods()
+                    .that().areDeclaredInClassesThat().resideInAPackage("..controller..")
+                    .and().haveNameMatching(".*[Uu]pdate.*")
+                    .should().beAnnotatedWith(org.springframework.web.bind.annotation.PutMapping.class);
 }
 

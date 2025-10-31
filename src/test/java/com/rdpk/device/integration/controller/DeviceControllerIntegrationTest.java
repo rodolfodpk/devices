@@ -161,7 +161,7 @@ class DeviceControllerIntegrationTest extends AbstractIntegrationTest {
     }
     
     @Test
-    @DisplayName("PUT /api/v1/devices/{id} - Should update device successfully")
+    @DisplayName("PATCH /api/v1/devices/{id} - Should update device successfully")
     void shouldUpdateDevice() {
         // Given
         Device saved = deviceRepository.save(DeviceFixture.createAvailableDevice())
@@ -175,7 +175,7 @@ class DeviceControllerIntegrationTest extends AbstractIntegrationTest {
                 """;
         
         // When & Then
-        webTestClient.put()
+        webTestClient.patch()
                 .uri("/api/v1/devices/{id}", saved.id())
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(requestBody)
@@ -188,7 +188,7 @@ class DeviceControllerIntegrationTest extends AbstractIntegrationTest {
     }
     
     @Test
-    @DisplayName("PUT /api/v1/devices/{id} - Should return 400 when updating name of device in use")
+    @DisplayName("PATCH /api/v1/devices/{id} - Should return 400 when updating name of device in use")
     void shouldReturn400WhenUpdatingInUseDevice() {
         // Given
         Device inUse = deviceRepository.save(DeviceFixture.createDeviceWithState("Device", "Brand", DeviceState.IN_USE))
@@ -200,7 +200,7 @@ class DeviceControllerIntegrationTest extends AbstractIntegrationTest {
                 """;
         
         // When & Then
-        webTestClient.put()
+        webTestClient.patch()
                 .uri("/api/v1/devices/{id}", inUse.id())
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(requestBody)
@@ -213,7 +213,7 @@ class DeviceControllerIntegrationTest extends AbstractIntegrationTest {
     }
     
     @Test
-    @DisplayName("PUT /api/v1/devices/{id} - Should return 404 when device not found")
+    @DisplayName("PATCH /api/v1/devices/{id} - Should return 404 when device not found")
     void shouldReturn404WhenUpdatingNonExistentDevice() {
         // Given
         String requestBody = """
@@ -223,7 +223,7 @@ class DeviceControllerIntegrationTest extends AbstractIntegrationTest {
                 """;
         
         // When & Then
-        webTestClient.put()
+        webTestClient.patch()
                 .uri("/api/v1/devices/999")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(requestBody)
@@ -233,6 +233,33 @@ class DeviceControllerIntegrationTest extends AbstractIntegrationTest {
                 .jsonPath("$.error").isEqualTo("NOT_FOUND")
                 .jsonPath("$.message").exists()
                 .jsonPath("$.timestamp").exists();
+    }
+    
+    @Test
+    @DisplayName("PATCH /api/v1/devices/{id} - Should partially update only provided fields")
+    void shouldPartiallyUpdateOnlyProvidedFields() {
+        // Given - Create device with initial values
+        Device saved = deviceRepository.save(DeviceFixture.createAvailableDevice("Original Name", "Original Brand"))
+                .block();
+        
+        // When - Update only state, leaving name and brand unchanged
+        String requestBody = """
+                {
+                    "state": "IN_USE"
+                }
+                """;
+        
+        // Then
+        webTestClient.patch()
+                .uri("/api/v1/devices/{id}", saved.id())
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(requestBody)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.name").isEqualTo("Original Name")
+                .jsonPath("$.brand").isEqualTo("Original Brand")
+                .jsonPath("$.state").isEqualTo("IN_USE");
     }
     
     @Test
@@ -284,6 +311,208 @@ class DeviceControllerIntegrationTest extends AbstractIntegrationTest {
                 .jsonPath("$.error").isEqualTo("NOT_FOUND")
                 .jsonPath("$.message").exists()
                 .jsonPath("$.timestamp").exists();
+    }
+    
+    // Pagination Tests
+    
+    @Test
+    @DisplayName("GET /api/v1/devices?page=0&size=2 - Should return paginated devices")
+    void shouldReturnPaginatedDevices() {
+        // Given - Create 5 devices
+        for (int i = 1; i <= 5; i++) {
+            deviceRepository.save(DeviceFixture.createAvailableDevice("Device " + i, "Brand")).block();
+        }
+        
+        // When & Then - First page
+        webTestClient.get()
+                .uri("/api/v1/devices?page=0&size=2")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.content.length()").isEqualTo(2)
+                .jsonPath("$.page").isEqualTo(0)
+                .jsonPath("$.size").isEqualTo(2)
+                .jsonPath("$.totalElements").isEqualTo(5)
+                .jsonPath("$.totalPages").isEqualTo(3)
+                .jsonPath("$.hasNext").isEqualTo(true)
+                .jsonPath("$.hasPrevious").isEqualTo(false);
+    }
+    
+    @Test
+    @DisplayName("GET /api/v1/devices?page=1&size=2 - Should return second page")
+    void shouldReturnSecondPage() {
+        // Given - Create 5 devices
+        for (int i = 1; i <= 5; i++) {
+            deviceRepository.save(DeviceFixture.createAvailableDevice("Device " + i, "Brand")).block();
+        }
+        
+        // When & Then - Second page
+        webTestClient.get()
+                .uri("/api/v1/devices?page=1&size=2")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.content.length()").isEqualTo(2)
+                .jsonPath("$.page").isEqualTo(1)
+                .jsonPath("$.size").isEqualTo(2)
+                .jsonPath("$.totalElements").isEqualTo(5)
+                .jsonPath("$.totalPages").isEqualTo(3)
+                .jsonPath("$.hasNext").isEqualTo(true)
+                .jsonPath("$.hasPrevious").isEqualTo(true);
+    }
+    
+    @Test
+    @DisplayName("GET /api/v1/devices?page=2&size=2 - Should return last page")
+    void shouldReturnLastPage() {
+        // Given - Create 5 devices
+        for (int i = 1; i <= 5; i++) {
+            deviceRepository.save(DeviceFixture.createAvailableDevice("Device " + i, "Brand")).block();
+        }
+        
+        // When & Then - Last page
+        webTestClient.get()
+                .uri("/api/v1/devices?page=2&size=2")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.content.length()").isEqualTo(1)
+                .jsonPath("$.page").isEqualTo(2)
+                .jsonPath("$.size").isEqualTo(2)
+                .jsonPath("$.totalElements").isEqualTo(5)
+                .jsonPath("$.totalPages").isEqualTo(3)
+                .jsonPath("$.hasNext").isEqualTo(false)
+                .jsonPath("$.hasPrevious").isEqualTo(true);
+    }
+    
+    @Test
+    @DisplayName("GET /api/v1/devices?page=0&size=2&brand=Apple - Should return paginated devices filtered by brand")
+    void shouldReturnPaginatedDevicesFilteredByBrand() {
+        // Given - Create devices with different brands
+        deviceRepository.save(DeviceFixture.createAvailableDevice("iPhone 1", "Apple")).block();
+        deviceRepository.save(DeviceFixture.createAvailableDevice("Galaxy", "Samsung")).block();
+        deviceRepository.save(DeviceFixture.createAvailableDevice("iPhone 2", "Apple")).block();
+        deviceRepository.save(DeviceFixture.createAvailableDevice("iPad", "Apple")).block();
+        deviceRepository.save(DeviceFixture.createAvailableDevice("Pixel", "Google")).block();
+        
+        // When & Then - First page of Apple devices
+        webTestClient.get()
+                .uri("/api/v1/devices?page=0&size=2&brand=Apple")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.content.length()").isEqualTo(2)
+                .jsonPath("$.page").isEqualTo(0)
+                .jsonPath("$.size").isEqualTo(2)
+                .jsonPath("$.totalElements").isEqualTo(3)
+                .jsonPath("$.totalPages").isEqualTo(2)
+                .jsonPath("$.hasNext").isEqualTo(true)
+                .jsonPath("$.hasPrevious").isEqualTo(false)
+                .jsonPath("$.content[0].brand").isEqualTo("Apple")
+                .jsonPath("$.content[1].brand").isEqualTo("Apple");
+    }
+    
+    @Test
+    @DisplayName("GET /api/v1/devices?page=0&size=2&state=IN_USE - Should return paginated devices filtered by state")
+    void shouldReturnPaginatedDevicesFilteredByState() {
+        // Given - Create devices with different states
+        deviceRepository.save(DeviceFixture.createAvailableDevice()).block();
+        deviceRepository.save(DeviceFixture.createDeviceWithState("Device 2", "Brand", DeviceState.IN_USE)).block();
+        deviceRepository.save(DeviceFixture.createDeviceWithState("Device 3", "Brand", DeviceState.IN_USE)).block();
+        deviceRepository.save(DeviceFixture.createDeviceWithState("Device 4", "Brand", DeviceState.IN_USE)).block();
+        
+        // When & Then - First page of IN_USE devices
+        webTestClient.get()
+                .uri("/api/v1/devices?page=0&size=2&state=IN_USE")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.content.length()").isEqualTo(2)
+                .jsonPath("$.page").isEqualTo(0)
+                .jsonPath("$.size").isEqualTo(2)
+                .jsonPath("$.totalElements").isEqualTo(3)
+                .jsonPath("$.totalPages").isEqualTo(2)
+                .jsonPath("$.hasNext").isEqualTo(true)
+                .jsonPath("$.hasPrevious").isEqualTo(false)
+                .jsonPath("$.content[0].state").isEqualTo("IN_USE")
+                .jsonPath("$.content[1].state").isEqualTo("IN_USE");
+    }
+    
+    @Test
+    @DisplayName("GET /api/v1/devices?page=0&size=10 - Should return all devices when page size is larger than total")
+    void shouldReturnAllDevicesWhenPageSizeIsLargerThanTotal() {
+        // Given - Create 3 devices
+        for (int i = 1; i <= 3; i++) {
+            deviceRepository.save(DeviceFixture.createAvailableDevice("Device " + i, "Brand")).block();
+        }
+        
+        // When & Then
+        webTestClient.get()
+                .uri("/api/v1/devices?page=0&size=10")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.content.length()").isEqualTo(3)
+                .jsonPath("$.page").isEqualTo(0)
+                .jsonPath("$.size").isEqualTo(10)
+                .jsonPath("$.totalElements").isEqualTo(3)
+                .jsonPath("$.totalPages").isEqualTo(1)
+                .jsonPath("$.hasNext").isEqualTo(false)
+                .jsonPath("$.hasPrevious").isEqualTo(false);
+    }
+    
+    @Test
+    @DisplayName("GET /api/v1/devices?page=0&size=0 - Should return 400 for invalid page size")
+    void shouldReturn400ForInvalidPageSize() {
+        // When & Then
+        webTestClient.get()
+                .uri("/api/v1/devices?page=0&size=0")
+                .exchange()
+                .expectStatus().isBadRequest();
+    }
+    
+    @Test
+    @DisplayName("GET /api/v1/devices?page=-1&size=10 - Should return 400 for negative page")
+    void shouldReturn400ForNegativePage() {
+        // When & Then
+        webTestClient.get()
+                .uri("/api/v1/devices?page=-1&size=10")
+                .exchange()
+                .expectStatus().isBadRequest();
+    }
+    
+    @Test
+    @DisplayName("GET /api/v1/devices?page=0&size=101 - Should return 400 for page size exceeding max")
+    void shouldReturn400ForPageSizeExceedingMax() {
+        // When & Then
+        webTestClient.get()
+                .uri("/api/v1/devices?page=0&size=101")
+                .exchange()
+                .expectStatus().isBadRequest();
+    }
+    
+    // NOTE: Sorting tests commented out - Spring Data R2DBC doesn't support dynamic sorting
+    // when OrderBy is hardcoded in repository method names. Results are always sorted by createdAt DESC.
+    // To enable dynamic sorting, a custom repository implementation would be required.
+    
+    @Test
+    @DisplayName("GET /api/v1/devices?page=0&size=10 - Should return devices sorted by createdAt DESC (default)")
+    void shouldReturnDevicesSortedByCreatedAtDescDefault() throws InterruptedException {
+        // Given - Create devices with delays to ensure different timestamps
+        deviceRepository.save(DeviceFixture.createAvailableDevice("Device 1", "Brand")).block();
+        Thread.sleep(10); // Small delay to ensure different timestamps
+        deviceRepository.save(DeviceFixture.createAvailableDevice("Device 2", "Brand")).block();
+        Thread.sleep(10);
+        deviceRepository.save(DeviceFixture.createAvailableDevice("Device 3", "Brand")).block();
+        
+        // When & Then - Should be ordered by createdAt DESC (newest first) - this is the default
+        webTestClient.get()
+                .uri("/api/v1/devices?page=0&size=10")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.content[0].name").isEqualTo("Device 3")
+                .jsonPath("$.content[1].name").isEqualTo("Device 2")
+                .jsonPath("$.content[2].name").isEqualTo("Device 1");
     }
 }
 

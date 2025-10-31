@@ -252,7 +252,8 @@ make k6-load
 
 - `src/main/resources/application.properties`: Production settings
 - `src/main/resources/application-k6.properties`: Relaxed settings for performance testing
-- `src/main/java/com/rdpk/config/ResilienceConfig.java`: Registry configuration
+
+**Note:** Resilience4j registries (`CircuitBreakerRegistry`, `RetryRegistry`, `TimeLimiterRegistry`) are auto-configured by Spring Boot when `resilience4j-spring-boot3` dependency is present. No manual configuration class needed - registries are injected as beans automatically.
 
 ## Best Practices
 

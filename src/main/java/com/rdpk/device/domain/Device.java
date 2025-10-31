@@ -20,8 +20,8 @@ public record Device(
     @Column("created_at")
     LocalDateTime createdAt
 ) {
-    public Device(String name, String brand) {
-        this(null, name, brand, DeviceState.AVAILABLE, LocalDateTime.now());
+    public Device(String name, String brand, LocalDateTime createdAt) {
+        this(null, name, brand, DeviceState.AVAILABLE, createdAt);
     }
     
     public Device withState(DeviceState newState) {

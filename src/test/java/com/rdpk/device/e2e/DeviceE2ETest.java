@@ -70,7 +70,7 @@ class DeviceE2ETest extends AbstractIntegrationTest {
                 }
                 """;
         
-        webTestClient.put()
+        webTestClient.patch()
                 .uri("/api/v1/devices/{id}", deviceId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(updateToInUse)
@@ -86,7 +86,7 @@ class DeviceE2ETest extends AbstractIntegrationTest {
                 }
                 """;
         
-        webTestClient.put()
+        webTestClient.patch()
                 .uri("/api/v1/devices/{id}", deviceId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(updateName)
@@ -100,7 +100,7 @@ class DeviceE2ETest extends AbstractIntegrationTest {
                 }
                 """;
         
-        webTestClient.put()
+        webTestClient.patch()
                 .uri("/api/v1/devices/{id}", deviceId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(updateToAvailable)
@@ -117,7 +117,7 @@ class DeviceE2ETest extends AbstractIntegrationTest {
                 }
                 """;
         
-        webTestClient.put()
+        webTestClient.patch()
                 .uri("/api/v1/devices/{id}", deviceId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(updateNameAndBrand)
@@ -128,7 +128,7 @@ class DeviceE2ETest extends AbstractIntegrationTest {
         
         // 7. Verify deletion protection: try to delete IN_USE device
         // First set to IN_USE
-        webTestClient.put()
+        webTestClient.patch()
                 .uri("/api/v1/devices/{id}", deviceId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue("{\"state\": \"IN_USE\"}")
@@ -141,7 +141,7 @@ class DeviceE2ETest extends AbstractIntegrationTest {
                 .expectStatus().isBadRequest();
         
         // 8. Set back to AVAILABLE and delete
-        webTestClient.put()
+        webTestClient.patch()
                 .uri("/api/v1/devices/{id}", deviceId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue("{\"state\": \"AVAILABLE\"}")
@@ -196,7 +196,7 @@ class DeviceE2ETest extends AbstractIntegrationTest {
                 .block();
         
         // Transition: AVAILABLE → IN_USE
-        webTestClient.put()
+        webTestClient.patch()
                 .uri("/api/v1/devices/{id}", created.id())
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue("{\"state\": \"IN_USE\"}")
@@ -207,7 +207,7 @@ class DeviceE2ETest extends AbstractIntegrationTest {
         assertThat(inUse.state()).isEqualTo(DeviceState.IN_USE);
         
         // Transition: IN_USE → AVAILABLE
-        webTestClient.put()
+        webTestClient.patch()
                 .uri("/api/v1/devices/{id}", created.id())
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue("{\"state\": \"AVAILABLE\"}")
@@ -226,7 +226,7 @@ class DeviceE2ETest extends AbstractIntegrationTest {
                 .block();
         
         // Try to update (this doesn't change createdAt, but we verify it stays)
-        webTestClient.put()
+        webTestClient.patch()
                 .uri("/api/v1/devices/{id}", created.id())
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue("{\"name\": \"Updated\"}")
@@ -236,7 +236,9 @@ class DeviceE2ETest extends AbstractIntegrationTest {
         Device updated = deviceRepository.findById(created.id()).block();
         
         // Verify createdAt is unchanged (domain validation)
-        assertThat(updated.createdAt()).isEqualTo(created.createdAt());
+        // Note: Truncate to milliseconds to account for microsecond-level database precision variations
+        assertThat(updated.createdAt().truncatedTo(java.time.temporal.ChronoUnit.MILLIS))
+                .isEqualTo(created.createdAt().truncatedTo(java.time.temporal.ChronoUnit.MILLIS));
         assertThat(updated.name()).isEqualTo("Updated"); // Name was updated
     }
 }
