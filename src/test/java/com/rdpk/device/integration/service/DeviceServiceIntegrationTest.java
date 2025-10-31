@@ -3,7 +3,6 @@ package com.rdpk.device.integration.service;
 import com.rdpk.device.AbstractIntegrationTest;
 import com.rdpk.device.domain.Device;
 import com.rdpk.device.domain.DeviceState;
-import com.rdpk.device.dto.UpdateDeviceRequest;
 import com.rdpk.device.exception.DeviceDeletionException;
 import com.rdpk.device.exception.DeviceUpdateException;
 import com.rdpk.device.fixture.DeviceFixture;
@@ -135,10 +134,9 @@ class DeviceServiceIntegrationTest extends AbstractIntegrationTest {
         // Given
         Device saved = deviceRepository.save(DeviceFixture.createAvailableDevice())
                 .block();
-        UpdateDeviceRequest request = new UpdateDeviceRequest("Updated Name", "Updated Brand", null);
         
         // When
-        StepVerifier.create(deviceService.updateDevice(saved.id(), request))
+        StepVerifier.create(deviceService.updateDevice(saved.id(), "Updated Name", "Updated Brand", null))
                 .assertNext(device -> {
                     assertThat(device.id()).isEqualTo(saved.id());
                     assertThat(device.name()).isEqualTo("Updated Name");
@@ -153,10 +151,9 @@ class DeviceServiceIntegrationTest extends AbstractIntegrationTest {
         // Given
         Device inUse = deviceRepository.save(DeviceFixture.createDeviceWithState("Device", "Brand", DeviceState.IN_USE))
                 .block();
-        UpdateDeviceRequest request = new UpdateDeviceRequest("New Name", null, null);
         
         // When
-        StepVerifier.create(deviceService.updateDevice(inUse.id(), request))
+        StepVerifier.create(deviceService.updateDevice(inUse.id(), "New Name", null, null))
                 .expectError(DeviceUpdateException.class)
                 .verify();
     }
@@ -167,10 +164,9 @@ class DeviceServiceIntegrationTest extends AbstractIntegrationTest {
         // Given
         Device inUse = deviceRepository.save(DeviceFixture.createDeviceWithState("Device", "Brand", DeviceState.IN_USE))
                 .block();
-        UpdateDeviceRequest request = new UpdateDeviceRequest(null, "New Brand", null);
         
         // When
-        StepVerifier.create(deviceService.updateDevice(inUse.id(), request))
+        StepVerifier.create(deviceService.updateDevice(inUse.id(), null, "New Brand", null))
                 .expectError(DeviceUpdateException.class)
                 .verify();
     }
@@ -181,10 +177,9 @@ class DeviceServiceIntegrationTest extends AbstractIntegrationTest {
         // Given
         Device inUse = deviceRepository.save(DeviceFixture.createDeviceWithState("Device", "Brand", DeviceState.IN_USE))
                 .block();
-        UpdateDeviceRequest request = new UpdateDeviceRequest(null, null, "AVAILABLE");
         
         // When
-        StepVerifier.create(deviceService.updateDevice(inUse.id(), request))
+        StepVerifier.create(deviceService.updateDevice(inUse.id(), null, null, DeviceState.AVAILABLE))
                 .assertNext(device -> {
                     assertThat(device.state()).isEqualTo(DeviceState.AVAILABLE);
                 })
@@ -194,11 +189,8 @@ class DeviceServiceIntegrationTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("Should throw exception when update device not found")
     void shouldThrowExceptionWhenUpdateDeviceNotFound() {
-        // Given
-        UpdateDeviceRequest request = new UpdateDeviceRequest("Name", null, null);
-        
         // When
-        StepVerifier.create(deviceService.updateDevice(999L, request))
+        StepVerifier.create(deviceService.updateDevice(999L, "Name", null, null))
                 .expectErrorMatches(e -> e instanceof RuntimeException && 
                     e.getMessage().equals("Device not found"))
                 .verify();
