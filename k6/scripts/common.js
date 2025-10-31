@@ -155,7 +155,7 @@ export function updateDevice(id) {
     tags: { name: 'UpdateDevice' }
   };
   
-  const response = http.put(`${API_BASE}/${id}`, payload, params);
+  const response = http.patch(`${API_BASE}/${id}`, payload, params);
   
   check(response, {
     'update device status is valid': (r) => r.status === 200 || r.status === 400 || r.status === 404,
@@ -210,7 +210,7 @@ export function changeDeviceState(id, state) {
     tags: { name: 'ChangeDeviceState' }
   };
   
-  const response = http.put(`${API_BASE}/${id}`, payload, params);
+  const response = http.patch(`${API_BASE}/${id}`, payload, params);
   
   return response;
 }

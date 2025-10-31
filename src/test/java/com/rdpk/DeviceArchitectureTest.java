@@ -1,7 +1,5 @@
 package com.rdpk;
 
-import com.tngtech.archunit.core.domain.JavaClasses;
-import com.tngtech.archunit.core.importer.ClassFileImporter;
 import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
@@ -29,12 +27,12 @@ class DeviceArchitectureTest {
                     .should().beAnnotatedWith(Service.class);
 
     @ArchTest
-    static final ArchRule repository_implementations_should_be_annotated_with_repository =
+    static final ArchRule repository_interfaces_should_extend_reactive_crud_repository =
             classes()
                     .that().resideInAPackage("..repository..")
-                    .and().haveSimpleNameEndingWith("RepositoryImpl")
-                    .and().areNotInterfaces()
-                    .should().beAnnotatedWith(Repository.class);
+                    .and().areInterfaces()
+                    .and().haveSimpleNameEndingWith("Repository")
+                    .should().beAssignableTo(org.springframework.data.repository.reactive.ReactiveCrudRepository.class);
 
     @ArchTest
     static final ArchRule controllers_should_only_depend_on_services =
@@ -88,8 +86,8 @@ class DeviceArchitectureTest {
     static final ArchRule repositories_should_have_repository_suffix =
             classes()
                     .that().resideInAPackage("..repository..")
-                    .and().areAnnotatedWith(Repository.class)
-                    .should().haveSimpleNameEndingWith("RepositoryImpl");
+                    .and().areInterfaces()
+                    .should().haveSimpleNameEndingWith("Repository");
 
     @ArchTest
     static final ArchRule domain_should_not_have_spring_annotations =

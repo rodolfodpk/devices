@@ -4,16 +4,17 @@ import com.rdpk.device.domain.DeviceState;
 import com.rdpk.device.dto.CreateDeviceRequest;
 import com.rdpk.device.dto.CreateDeviceResponse;
 import com.rdpk.device.dto.GetDeviceResponse;
+import com.rdpk.device.dto.PagedResponse;
 import com.rdpk.device.dto.UpdateDeviceRequest;
 import com.rdpk.device.dto.UpdateDeviceResponse;
 import com.rdpk.device.service.DeviceService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/devices")
@@ -34,10 +35,66 @@ public class DeviceController {
     }
     
     @GetMapping
-    public Mono<ResponseEntity<List<GetDeviceResponse>>> getAllDevices(
+    public Mono<ResponseEntity<?>> getAllDevices(
             @RequestParam(required = false) String brand,
-            @RequestParam(required = false) String state) {
+            @RequestParam(required = false) String state,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size) {
         
+        // If pagination parameters are provided, use paginated endpoints
+        if (page != null || size != null) {
+            // Validate pagination parameters
+            if (page != null && page < 0) {
+                return Mono.just(ResponseEntity.badRequest().build());
+            }
+            if (size != null && (size < 1 || size > 100)) {
+                return Mono.just(ResponseEntity.badRequest().build());
+            }
+            
+            int pageNumber = page != null ? page : 0;
+            int pageSize = size != null ? size : 20;
+            Pageable pageable = PageRequest.of(pageNumber, pageSize);
+            
+            if (brand != null) {
+                return Mono.zip(
+                        deviceService.getDevicesByBrand(brand, pageable)
+                                .map(GetDeviceResponse::from)
+                                .collectList(),
+                        deviceService.countByBrand(brand)
+                ).map(tuple -> ResponseEntity.ok(
+                        PagedResponse.of(tuple.getT1(), pageNumber, pageSize, tuple.getT2()))
+                );
+            }
+            
+            if (state != null) {
+                DeviceState deviceState;
+                try {
+                    deviceState = DeviceState.valueOf(state.toUpperCase());
+                    return Mono.zip(
+                            deviceService.getDevicesByState(deviceState, pageable)
+                                    .map(GetDeviceResponse::from)
+                                    .collectList(),
+                            deviceService.countByState(deviceState)
+                    ).map(tuple -> ResponseEntity.ok(
+                            PagedResponse.of(tuple.getT1(), pageNumber, pageSize, tuple.getT2()))
+                    );
+                } catch (IllegalArgumentException e) {
+                    return Mono.just(ResponseEntity.badRequest().build());
+                }
+            }
+            
+            // Paginated all devices
+            return Mono.zip(
+                    deviceService.getAllDevices(pageable)
+                            .map(GetDeviceResponse::from)
+                            .collectList(),
+                    deviceService.countAllDevices()
+            ).map(tuple -> ResponseEntity.ok(
+                    PagedResponse.of(tuple.getT1(), pageNumber, pageSize, tuple.getT2()))
+            );
+        }
+        
+        // Non-paginated (backward compatibility)
         if (brand != null) {
             return deviceService.getDevicesByBrand(brand)
                     .map(GetDeviceResponse::from)
@@ -65,7 +122,27 @@ public class DeviceController {
                 .map(ResponseEntity::ok);
     }
     
-    @PutMapping("/{id}")
+    /**
+     * Partially updates a device.
+     * 
+     * <p>This is a PATCH operation that supports partial updates. Only fields provided 
+     * (non-null) in the request will be updated. Fields that are null or not provided 
+     * will remain unchanged in the database.
+     * 
+     * <p>Example: If you send {"state": "IN_USE"}, only the state will be updated,
+     * while name and brand remain unchanged.
+     * 
+     * <p>Domain rules apply:
+     * <ul>
+     *   <li>Cannot update name or brand of a device that is IN_USE</li>
+     *   <li>State can always be updated regardless of current state</li>
+     * </ul>
+     * 
+     * @param id The device ID to update
+     * @param request Partial update request - only non-null fields will be updated
+     * @return Updated device response
+     */
+    @PatchMapping("/{id}")
     public Mono<ResponseEntity<UpdateDeviceResponse>> updateDevice(
             @PathVariable Long id,
             @RequestBody UpdateDeviceRequest request) {

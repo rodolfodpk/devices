@@ -1,16 +1,12 @@
 package com.rdpk.config;
 
-import org.springframework.r2dbc.core.DatabaseClient;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import io.r2dbc.spi.ConnectionFactory;
+import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories;
 
 @Configuration
+@EnableR2dbcRepositories(basePackages = "com.rdpk.device.repository")
 public class DatabaseConfig {
-    
-    @Bean
-    public DatabaseClient databaseClient(ConnectionFactory connectionFactory) {
-        return DatabaseClient.create(connectionFactory);
-    }
+    // Spring Data R2DBC automatically handles repository creation
+    // DatabaseClient bean removed as it's no longer needed
 }
 

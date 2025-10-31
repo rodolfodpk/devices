@@ -85,7 +85,7 @@ class DeviceRepositoryIntegrationTest extends AbstractIntegrationTest {
                 .block();
         
         // When
-        List<Device> devices = deviceRepository.findAll()
+        List<Device> devices = deviceRepository.findAllByOrderByCreatedAtDesc()
                 .collectList()
                 .block();
         
@@ -105,7 +105,7 @@ class DeviceRepositoryIntegrationTest extends AbstractIntegrationTest {
         deviceRepository.save(DeviceFixture.createAvailableDevice("Device 3", "Apple")).block();
         
         // When
-        List<Device> devices = deviceRepository.findByBrand("Apple")
+        List<Device> devices = deviceRepository.findByBrandOrderByCreatedAtDesc("Apple")
                 .collectList()
                 .block();
         
@@ -128,7 +128,7 @@ class DeviceRepositoryIntegrationTest extends AbstractIntegrationTest {
                 .block();
         
         // When
-        List<Device> devices = deviceRepository.findByState(DeviceState.IN_USE)
+        List<Device> devices = deviceRepository.findByStateOrderByCreatedAtDesc(DeviceState.IN_USE)
                 .collectList()
                 .block();
         
