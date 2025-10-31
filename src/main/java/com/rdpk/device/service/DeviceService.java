@@ -102,13 +102,9 @@ public class DeviceService {
     }
     
     public Flux<Device> getDevicesByState(String state) {
-        DeviceState deviceState;
-        try {
-            deviceState = DeviceState.valueOf(state.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            return Flux.error(new RuntimeException("Invalid state: " + state));
-        }
-        return applyResilience(deviceRepository.findByStateOrderByCreatedAtDesc(deviceState));
+        return DeviceState.fromString(state)
+                .map(deviceState -> applyResilience(deviceRepository.findByStateOrderByCreatedAtDesc(deviceState)))
+                .orElse(Flux.error(new RuntimeException("Invalid state: " + state)));
     }
     
     /**

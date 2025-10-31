@@ -1,5 +1,6 @@
 package com.rdpk.device.controller;
 
+import com.rdpk.device.domain.Device;
 import com.rdpk.device.domain.DeviceState;
 import com.rdpk.device.dto.CreateDeviceRequest;
 import com.rdpk.device.dto.CreateDeviceResponse;
@@ -14,7 +15,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/devices")
@@ -63,10 +67,7 @@ public class DeviceController {
         // If pagination parameters are provided, use paginated endpoints
         if (page != null || size != null) {
             // Validate pagination parameters
-            if (page != null && page < 0) {
-                return Mono.just(ResponseEntity.badRequest().build());
-            }
-            if (size != null && (size < 1 || size > 100)) {
+            if (!isValidPagination(page, size)) {
                 return Mono.just(ResponseEntity.badRequest().build());
             }
             
@@ -78,41 +79,28 @@ public class DeviceController {
             Pageable pageable = PageRequest.of(pageNumber, pageSize);
             
             if (brand != null) {
-                return Mono.zip(
-                        deviceService.getDevicesByBrand(brand, pageable)
-                                .map(GetDeviceResponse::from)
-                                .collectList(),
-                        deviceService.countByBrand(brand)
-                ).map(tuple -> ResponseEntity.ok(
-                        PagedResponse.of(tuple.getT1(), pageNumber, pageSize, tuple.getT2()))
+                return buildPaginatedResponse(
+                        deviceService.getDevicesByBrand(brand, pageable),
+                        deviceService.countByBrand(brand),
+                        pageNumber, pageSize
                 );
             }
             
             if (state != null) {
-                DeviceState deviceState;
-                try {
-                    deviceState = DeviceState.valueOf(state.toUpperCase());
-                    return Mono.zip(
-                            deviceService.getDevicesByState(deviceState, pageable)
-                                    .map(GetDeviceResponse::from)
-                                    .collectList(),
-                            deviceService.countByState(deviceState)
-                    ).map(tuple -> ResponseEntity.ok(
-                            PagedResponse.of(tuple.getT1(), pageNumber, pageSize, tuple.getT2()))
-                    );
-                } catch (IllegalArgumentException e) {
-                    return Mono.just(ResponseEntity.badRequest().build());
-                }
+                return DeviceState.fromString(state)
+                        .map(deviceState -> buildPaginatedResponse(
+                                deviceService.getDevicesByState(deviceState, pageable),
+                                deviceService.countByState(deviceState),
+                                pageNumber, pageSize
+                        ))
+                        .orElse(Mono.just(ResponseEntity.badRequest().build()));
             }
             
             // Paginated all devices
-            return Mono.zip(
-                    deviceService.getAllDevices(pageable)
-                            .map(GetDeviceResponse::from)
-                            .collectList(),
-                    deviceService.countAllDevices()
-            ).map(tuple -> ResponseEntity.ok(
-                    PagedResponse.of(tuple.getT1(), pageNumber, pageSize, tuple.getT2()))
+            return buildPaginatedResponse(
+                    deviceService.getAllDevices(pageable),
+                    deviceService.countAllDevices(),
+                    pageNumber, pageSize
             );
         }
         
@@ -168,15 +156,16 @@ public class DeviceController {
     public Mono<ResponseEntity<UpdateDeviceResponse>> updateDevice(
             @PathVariable Long id,
             @RequestBody UpdateDeviceRequest request) {
-        DeviceState state = null;
         if (request.state() != null) {
-            try {
-                state = DeviceState.valueOf(request.state().toUpperCase());
-            } catch (IllegalArgumentException e) {
+            Optional<DeviceState> parsedState = DeviceState.fromString(request.state());
+            if (parsedState.isEmpty()) {
                 return Mono.just(ResponseEntity.badRequest().build());
             }
+            return deviceService.updateDevice(id, request.name(), request.brand(), parsedState.get())
+                    .map(UpdateDeviceResponse::from)
+                    .map(ResponseEntity::ok);
         }
-        return deviceService.updateDevice(id, request.name(), request.brand(), state)
+        return deviceService.updateDevice(id, request.name(), request.brand(), null)
                 .map(UpdateDeviceResponse::from)
                 .map(ResponseEntity::ok);
     }
@@ -185,6 +174,37 @@ public class DeviceController {
     public Mono<ResponseEntity<Void>> deleteDevice(@PathVariable Long id) {
         return deviceService.deleteDevice(id)
                 .then(Mono.just(ResponseEntity.noContent().<Void>build()));
+    }
+    
+    /**
+     * Validates pagination parameters.
+     * 
+     * @param page Page number (must be >= 0 if provided)
+     * @param size Page size (must be between 1 and 100 if provided)
+     * @return true if valid, false otherwise
+     */
+    private boolean isValidPagination(Integer page, Integer size) {
+        return (page == null || page >= 0) && (size == null || (size >= 1 && size <= 100));
+    }
+    
+    
+    /**
+     * Builds a paginated response from devices flux and count mono.
+     * 
+     * @param devices Flux of devices to paginate
+     * @param count Mono of total count
+     * @param pageNumber Current page number
+     * @param pageSize Page size
+     * @return Mono of ResponseEntity with PagedResponse
+     */
+    private Mono<ResponseEntity<?>> buildPaginatedResponse(
+            Flux<Device> devices, Mono<Long> count, int pageNumber, int pageSize) {
+        return Mono.zip(
+                devices.map(GetDeviceResponse::from).collectList(),
+                count
+        ).map(tuple -> ResponseEntity.ok(
+                PagedResponse.of(tuple.getT1(), pageNumber, pageSize, tuple.getT2())
+        ));
     }
 }
 
