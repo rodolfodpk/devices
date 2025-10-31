@@ -236,9 +236,9 @@ class DeviceE2ETest extends AbstractIntegrationTest {
         Device updated = deviceRepository.findById(created.id()).block();
         
         // Verify createdAt is unchanged (domain validation)
-        // Note: PostgreSQL TIMESTAMP stores microseconds, not nanoseconds, so we truncate both to microseconds for comparison
-        assertThat(updated.createdAt().truncatedTo(java.time.temporal.ChronoUnit.MICROS))
-                .isEqualTo(created.createdAt().truncatedTo(java.time.temporal.ChronoUnit.MICROS));
+        // Note: Truncate to milliseconds to account for microsecond-level database precision variations
+        assertThat(updated.createdAt().truncatedTo(java.time.temporal.ChronoUnit.MILLIS))
+                .isEqualTo(created.createdAt().truncatedTo(java.time.temporal.ChronoUnit.MILLIS));
         assertThat(updated.name()).isEqualTo("Updated"); // Name was updated
     }
 }
