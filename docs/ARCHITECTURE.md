@@ -11,7 +11,7 @@ src/main/java/com/rdpk/
 ├── Application.java              # Main application class
 ├── config/                        # Configuration classes
 │   ├── DatabaseConfig.java
-│   └── ResilienceConfig.java
+│   └── GlobalExceptionHandler.java
 └── device/                        # Device feature (package-per-layer)
     ├── controller/                # REST API layer
     ├── service/                   # Business logic layer
