@@ -10,7 +10,6 @@ The application follows a **package-per-layer** architecture pattern, where each
 src/main/java/com/rdpk/
 ├── Application.java              # Main application class
 ├── config/                        # Configuration classes
-│   ├── DatabaseConfig.java
 │   └── GlobalExceptionHandler.java
 └── device/                        # Device feature (package-per-layer)
     ├── controller/                # REST API layer
