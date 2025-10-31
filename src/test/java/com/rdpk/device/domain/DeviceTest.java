@@ -3,6 +3,8 @@ package com.rdpk.device.domain;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDateTime;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("Device Domain Model Tests")
@@ -12,7 +14,8 @@ class DeviceTest {
     @DisplayName("Should create device with AVAILABLE state by default")
     void shouldCreateDeviceWithAvailableState() {
         // Given & When
-        Device device = new Device("Test Device", "Test Brand");
+        LocalDateTime now = LocalDateTime.now();
+        Device device = new Device("Test Device", "Test Brand", now);
         
         // Then
         assertThat(device.id()).isNull();
@@ -27,8 +30,9 @@ class DeviceTest {
     @DisplayName("Should correctly identify IN_USE devices")
     void shouldIdentifyInUseDevices() {
         // Given
-        Device availableDevice = new Device("Device 1", "Brand");
-        Device inUseDevice = new Device("Device 2", "Brand").withState(DeviceState.IN_USE);
+        LocalDateTime now = LocalDateTime.now();
+        Device availableDevice = new Device("Device 1", "Brand", now);
+        Device inUseDevice = new Device("Device 2", "Brand", now).withState(DeviceState.IN_USE);
         
         // Then
         assertThat(availableDevice.isInUse()).isFalse();
@@ -39,7 +43,8 @@ class DeviceTest {
     @DisplayName("Should create new instance when updating state")
     void shouldCreateNewInstanceWhenUpdatingState() {
         // Given
-        Device original = new Device("Original", "Brand");
+        LocalDateTime now = LocalDateTime.now();
+        Device original = new Device("Original", "Brand", now);
         
         // When
         Device updated = original.withState(DeviceState.IN_USE);
@@ -54,7 +59,8 @@ class DeviceTest {
     @DisplayName("Should create new instance when updating name")
     void shouldCreateNewInstanceWhenUpdatingName() {
         // Given
-        Device original = new Device("Original", "Brand");
+        LocalDateTime now = LocalDateTime.now();
+        Device original = new Device("Original", "Brand", now);
         
         // When
         Device updated = original.withName("Updated");
@@ -69,7 +75,8 @@ class DeviceTest {
     @DisplayName("Should create new instance when updating brand")
     void shouldCreateNewInstanceWhenUpdatingBrand() {
         // Given
-        Device original = new Device("Name", "Original Brand");
+        LocalDateTime now = LocalDateTime.now();
+        Device original = new Device("Name", "Original Brand", now);
         
         // When
         Device updated = original.withBrand("Updated Brand");
@@ -84,7 +91,8 @@ class DeviceTest {
     @DisplayName("Should create new instance when updating both name and brand")
     void shouldCreateNewInstanceWhenUpdatingBothNameAndBrand() {
         // Given
-        Device original = new Device("Original Name", "Original Brand");
+        LocalDateTime now = LocalDateTime.now();
+        Device original = new Device("Original Name", "Original Brand", now);
         
         // When
         Device updated = original.withNameAndBrand("Updated Name", "Updated Brand");
@@ -101,7 +109,8 @@ class DeviceTest {
     @DisplayName("Should preserve original record when using withState")
     void shouldPreserveOriginalWhenUsingWithState() {
         // Given
-        Device original = new Device("Device", "Brand");
+        LocalDateTime now = LocalDateTime.now();
+        Device original = new Device("Device", "Brand", now);
         
         // When
         original.withState(DeviceState.IN_USE);
@@ -115,7 +124,8 @@ class DeviceTest {
     @DisplayName("Should correctly identify inactive devices as not in use")
     void shouldIdentifyInactiveDevicesAsNotInUse() {
         // Given
-        Device inactiveDevice = new Device("Device", "Brand").withState(DeviceState.INACTIVE);
+        LocalDateTime now = LocalDateTime.now();
+        Device inactiveDevice = new Device("Device", "Brand", now).withState(DeviceState.INACTIVE);
         
         // Then
         assertThat(inactiveDevice.isInUse()).isFalse();
@@ -126,9 +136,10 @@ class DeviceTest {
     @DisplayName("Should correctly identify isDeletable for all states")
     void shouldCorrectlyIdentifyIsDeletableForAllStates() {
         // Given
-        Device availableDevice = new Device("Available", "Brand");
-        Device inUseDevice = new Device("InUse", "Brand").withState(DeviceState.IN_USE);
-        Device inactiveDevice = new Device("Inactive", "Brand").withState(DeviceState.INACTIVE);
+        LocalDateTime now = LocalDateTime.now();
+        Device availableDevice = new Device("Available", "Brand", now);
+        Device inUseDevice = new Device("InUse", "Brand", now).withState(DeviceState.IN_USE);
+        Device inactiveDevice = new Device("Inactive", "Brand", now).withState(DeviceState.INACTIVE);
         
         // Then
         assertThat(availableDevice.isDeletable()).isTrue(); // AVAILABLE can be deleted
@@ -140,7 +151,8 @@ class DeviceTest {
     @DisplayName("Should allow state transition to INACTIVE")
     void shouldAllowStateTransitionToInactive() {
         // Given
-        Device availableDevice = new Device("Device", "Brand");
+        LocalDateTime now = LocalDateTime.now();
+        Device availableDevice = new Device("Device", "Brand", now);
         
         // When
         Device inactiveDevice = availableDevice.withState(DeviceState.INACTIVE);
@@ -154,7 +166,8 @@ class DeviceTest {
     @DisplayName("Should allow state transition from INACTIVE")
     void shouldAllowStateTransitionFromInactive() {
         // Given
-        Device inactiveDevice = new Device("Device", "Brand").withState(DeviceState.INACTIVE);
+        LocalDateTime now = LocalDateTime.now();
+        Device inactiveDevice = new Device("Device", "Brand", now).withState(DeviceState.INACTIVE);
         
         // When - reactivate device
         Device reactivatedDevice = inactiveDevice.withState(DeviceState.AVAILABLE);
@@ -168,9 +181,10 @@ class DeviceTest {
     @DisplayName("Should test isInUse() for all three states")
     void shouldTestIsInUseForAllStates() {
         // Given
-        Device availableDevice = new Device("Available", "Brand");
-        Device inUseDevice = new Device("InUse", "Brand").withState(DeviceState.IN_USE);
-        Device inactiveDevice = new Device("Inactive", "Brand").withState(DeviceState.INACTIVE);
+        LocalDateTime now = LocalDateTime.now();
+        Device availableDevice = new Device("Available", "Brand", now);
+        Device inUseDevice = new Device("InUse", "Brand", now).withState(DeviceState.IN_USE);
+        Device inactiveDevice = new Device("Inactive", "Brand", now).withState(DeviceState.INACTIVE);
         
         // Then
         assertThat(availableDevice.isInUse()).isFalse();

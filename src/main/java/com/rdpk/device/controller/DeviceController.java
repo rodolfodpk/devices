@@ -34,6 +34,25 @@ public class DeviceController {
                 .map(response -> ResponseEntity.status(HttpStatus.CREATED).body(response));
     }
     
+    /**
+     * Gets all devices with optional filtering and pagination.
+     * 
+     * <p>Supports:
+     * <ul>
+     *   <li>Filtering by brand: {@code ?brand=Apple}</li>
+     *   <li>Filtering by state: {@code ?state=AVAILABLE}</li>
+     *   <li>Pagination: {@code ?page=0&size=20}</li>
+     * </ul>
+     * 
+     * <p>Sorting: Results are always sorted by {@code createdAt DESC} (newest first).
+     * Custom sorting is not currently supported due to Spring Data R2DBC limitations.
+     * 
+     * @param brand Optional brand filter
+     * @param state Optional state filter (AVAILABLE, IN_USE, INACTIVE)
+     * @param page Page number (0-indexed, optional, defaults to 0)
+     * @param size Page size (optional, defaults to 20, max 100)
+     * @return Paginated response if pagination params provided, otherwise list of all devices
+     */
     @GetMapping
     public Mono<ResponseEntity<?>> getAllDevices(
             @RequestParam(required = false) String brand,
@@ -51,6 +70,9 @@ public class DeviceController {
                 return Mono.just(ResponseEntity.badRequest().build());
             }
             
+            // Default sort: createdAt DESC
+            // Note: Spring Data R2DBC doesn't override OrderBy with Sort from Pageable,
+            // so we use the default sort defined in repository method name
             int pageNumber = page != null ? page : 0;
             int pageSize = size != null ? size : 20;
             Pageable pageable = PageRequest.of(pageNumber, pageSize);

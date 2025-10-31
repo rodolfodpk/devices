@@ -8,36 +8,35 @@ import java.time.LocalDateTime;
 public class DeviceFixture {
     
     public static Device createAvailableDevice() {
-        Device device = new Device("iPhone 15", "Apple");
-        return device;
+        return new Device("iPhone 15", "Apple", LocalDateTime.now());
     }
     
     public static Device createInUseDevice() {
-        Device device = new Device("Samsung Galaxy S24", "Samsung");
+        Device device = new Device("Samsung Galaxy S24", "Samsung", LocalDateTime.now());
         return device.withState(DeviceState.IN_USE);
     }
     
     public static Device createInactiveDevice() {
-        Device device = new Device("Old Device", "Generic");
+        Device device = new Device("Old Device", "Generic", LocalDateTime.now());
         return device.withState(DeviceState.INACTIVE);
     }
     
     public static Device createAvailableDevice(String name, String brand) {
-        return new Device(name, brand);
+        return new Device(name, brand, LocalDateTime.now());
     }
     
     public static Device createInactiveDevice(String name, String brand) {
-        return new Device(name, brand).withState(DeviceState.INACTIVE);
+        return new Device(name, brand, LocalDateTime.now()).withState(DeviceState.INACTIVE);
     }
     
     public static Device createDeviceWithState(String name, String brand, DeviceState state) {
-        Device device = new Device(name, brand);
+        Device device = new Device(name, brand, LocalDateTime.now());
         return device.withState(state);
     }
     
     public static Device createDeviceWithState(String name, String brand, DeviceState state, LocalDateTime createdAt) {
         // Create device, then update state if needed (for testing with specific createdAt)
-        Device device = new Device(name, brand);
+        Device device = new Device(null, name, brand, DeviceState.AVAILABLE, createdAt);
         if (state != DeviceState.AVAILABLE) {
             device = device.withState(state);
         }

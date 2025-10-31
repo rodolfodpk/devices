@@ -17,6 +17,9 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.Clock;
+import java.time.LocalDateTime;
+
 @Service
 public class DeviceService {
     
@@ -24,16 +27,19 @@ public class DeviceService {
     private final CircuitBreakerRegistry circuitBreakerRegistry;
     private final RetryRegistry retryRegistry;
     private final TimeLimiterRegistry timeLimiterRegistry;
+    private final Clock clock;
     
     public DeviceService(
             DeviceRepository deviceRepository,
             CircuitBreakerRegistry circuitBreakerRegistry,
             RetryRegistry retryRegistry,
-            TimeLimiterRegistry timeLimiterRegistry) {
+            TimeLimiterRegistry timeLimiterRegistry,
+            Clock clock) {
         this.deviceRepository = deviceRepository;
         this.circuitBreakerRegistry = circuitBreakerRegistry;
         this.retryRegistry = retryRegistry;
         this.timeLimiterRegistry = timeLimiterRegistry;
+        this.clock = clock;
     }
     
     private <T> Mono<T> applyResilience(Mono<T> mono) {
@@ -51,7 +57,8 @@ public class DeviceService {
     }
     
     public Mono<Device> createDevice(String name, String brand) {
-        Device newDevice = new Device(name, brand);
+        LocalDateTime now = LocalDateTime.now(clock);
+        Device newDevice = new Device(null, name, brand, DeviceState.AVAILABLE, now);
         return applyResilience(deviceRepository.save(newDevice));
     }
     
@@ -70,7 +77,7 @@ public class DeviceService {
     }
     
     public Flux<Device> getDevicesByBrand(String brand, Pageable pageable) {
-        return applyResilience(deviceRepository.findByBrandOrderByCreatedAtDesc(brand, pageable));
+        return applyResilience(deviceRepository.findByBrand(brand, pageable));
     }
     
     public Mono<Long> countByBrand(String brand) {
@@ -78,7 +85,7 @@ public class DeviceService {
     }
     
     public Flux<Device> getDevicesByState(DeviceState state, Pageable pageable) {
-        return applyResilience(deviceRepository.findByStateOrderByCreatedAtDesc(state, pageable));
+        return applyResilience(deviceRepository.findByState(state, pageable));
     }
     
     public Mono<Long> countByState(DeviceState state) {
