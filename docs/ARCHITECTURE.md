@@ -54,18 +54,21 @@ public class DeviceController {
 - Implement business logic
 - Enforce domain validation rules
 - Coordinate between controller and repository
+- Apply Resilience4j patterns (Circuit Breaker, Retry, Timeout)
 
 **Rules:**
 - `@Service` annotation required
 - Must end with `Service` suffix
-- Can depend on repository and domain layers only
+- Can depend on repository, domain, and Resilience4j layers
+- Applies Resilience4j transformers to all repository calls
 
 **Example:**
 ```java
 @Service
 public class DeviceService {
     private final DeviceRepository deviceRepository;
-    // ...
+    private final CircuitBreakerRegistry circuitBreakerRegistry;
+    // Applies Circuit Breaker, Retry, Timeout to repository operations
 }
 ```
 
@@ -78,16 +81,17 @@ public class DeviceService {
 - Data persistence
 
 **Rules:**
-- `@Repository` annotation required
+- Interface extending `ReactiveCrudRepository`
 - Must end with `Repository` suffix
 - Can only depend on domain layer
-- Apply Resilience4j transformers to database operations
+- Spring Data R2DBC automatically implements repository interfaces
+- **No Resilience4j dependencies** (applied at service layer instead)
 
 **Example:**
 ```java
-@Repository
-public class DeviceRepositoryImpl implements DeviceRepository {
-    // Applies Circuit Breaker, Retry, Timeout
+public interface DeviceRepository extends ReactiveCrudRepository<Device, Long> {
+    Flux<Device> findAllByOrderByCreatedAtDesc(Pageable pageable);
+    Flux<Device> findByBrandOrderByCreatedAtDesc(String brand, Pageable pageable);
 }
 ```
 
@@ -155,6 +159,7 @@ Controller → Service
 Service → Repository
        → Domain
        → Exception
+       → Resilience4j (CircuitBreakerRegistry, RetryRegistry, TimeLimiterRegistry)
 
 Repository → Domain
 
@@ -165,7 +170,9 @@ Domain → (no dependencies)
 
 - ❌ Controller → Repository (use Service instead)
 - ❌ Service → Controller (circular dependency)
+- ❌ Service → DTO (use domain objects)
 - ❌ Repository → Service, Controller
+- ❌ Repository → Resilience4j (applied at service layer)
 - ❌ Domain → Spring annotations, other layers
 - ❌ DTO → Spring annotations
 - ❌ Exception → Spring annotations
@@ -195,24 +202,30 @@ mvn test -Dtest=DeviceArchitectureTest
    - Must be annotated with `@Service`
    - Must end with `Service` suffix
    - Cannot depend on controller layer
+   - Applies Resilience4j to repository operations
 
 3. **Repositories**
-   - Must be annotated with `@Repository`
+   - Must be interfaces extending `ReactiveCrudRepository`
    - Must end with `Repository` suffix
    - Cannot depend on service or controller layers
+   - Cannot depend on Resilience4j
 
-4. **Domain**
+4. **HTTP Methods**
+   - Update endpoints must use `@PatchMapping` (not `@PutMapping`)
+   - Enforces partial update semantics
+
+5. **Domain**
    - No Spring annotations allowed
    - Pure domain logic
    - Immutable records
 
-5. **DTOs**
+6. **DTOs**
    - No Spring annotations
    - Data validation only
 
 ## Resilience Patterns
 
-Database operations in the repository layer are protected with Resilience4j using Reactor transformers.
+Database operations are protected with Resilience4j at the service layer using Reactor transformers.
 
 See **[Resilience Documentation](RESILIENCE.md)** for details on:
 - Circuit Breaker configuration

@@ -112,5 +112,31 @@ class DeviceArchitectureTest {
                     .should().beAnnotatedWith(RestController.class)
                     .orShould().beAnnotatedWith(Service.class)
                     .orShould().beAnnotatedWith(Repository.class);
+    
+    @ArchTest
+    static final ArchRule repositories_should_not_depend_on_resilience4j =
+            noClasses()
+                    .that().resideInAPackage("..repository..")
+                    .should().dependOnClassesThat().haveFullyQualifiedName(
+                            io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry.class.getName())
+                    .orShould().dependOnClassesThat().haveFullyQualifiedName(
+                            io.github.resilience4j.retry.RetryRegistry.class.getName())
+                    .orShould().dependOnClassesThat().haveFullyQualifiedName(
+                            io.github.resilience4j.timelimiter.TimeLimiterRegistry.class.getName())
+                    .orShould().dependOnClassesThat().haveSimpleNameContaining("Resilience4j")
+                    .orShould().dependOnClassesThat().resideInAPackage("..resilience4j..");
+    
+    @ArchTest
+    static final ArchRule controllers_should_not_use_putmapping =
+            noClasses()
+                    .that().resideInAPackage("..controller..")
+                    .should().beAnnotatedWith(org.springframework.web.bind.annotation.PutMapping.class);
+    
+    @ArchTest
+    static final ArchRule controller_methods_should_not_use_putmapping =
+            noMethods()
+                    .that().areDeclaredInClassesThat().resideInAPackage("..controller..")
+                    .and().haveNameMatching(".*[Uu]pdate.*")
+                    .should().beAnnotatedWith(org.springframework.web.bind.annotation.PutMapping.class);
 }
 
