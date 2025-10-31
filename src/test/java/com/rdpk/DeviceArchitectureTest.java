@@ -49,6 +49,12 @@ class DeviceArchitectureTest {
                     .should().dependOnClassesThat().resideInAPackage("..controller..");
 
     @ArchTest
+    static final ArchRule services_should_not_depend_on_dtos =
+            noClasses()
+                    .that().resideInAPackage("..service..")
+                    .should().dependOnClassesThat().resideInAPackage("..dto..");
+
+    @ArchTest
     static final ArchRule repositories_should_not_depend_on_services_or_controllers =
             noClasses()
                     .that().resideInAPackage("..repository..")

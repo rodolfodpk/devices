@@ -1,5 +1,6 @@
 package com.rdpk.device.controller;
 
+import com.rdpk.device.domain.DeviceState;
 import com.rdpk.device.dto.CreateDeviceRequest;
 import com.rdpk.device.dto.CreateDeviceResponse;
 import com.rdpk.device.dto.GetDeviceResponse;
@@ -68,7 +69,15 @@ public class DeviceController {
     public Mono<ResponseEntity<UpdateDeviceResponse>> updateDevice(
             @PathVariable Long id,
             @RequestBody UpdateDeviceRequest request) {
-        return deviceService.updateDevice(id, request)
+        DeviceState state = null;
+        if (request.state() != null) {
+            try {
+                state = DeviceState.valueOf(request.state().toUpperCase());
+            } catch (IllegalArgumentException e) {
+                return Mono.just(ResponseEntity.badRequest().build());
+            }
+        }
+        return deviceService.updateDevice(id, request.name(), request.brand(), state)
                 .map(UpdateDeviceResponse::from)
                 .map(ResponseEntity::ok);
     }

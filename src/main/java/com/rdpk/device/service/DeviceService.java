@@ -2,7 +2,6 @@ package com.rdpk.device.service;
 
 import com.rdpk.device.domain.Device;
 import com.rdpk.device.domain.DeviceState;
-import com.rdpk.device.dto.UpdateDeviceRequest;
 import com.rdpk.device.exception.DeviceDeletionException;
 import com.rdpk.device.exception.DeviceNotFoundException;
 import com.rdpk.device.exception.DeviceUpdateException;
@@ -48,37 +47,32 @@ public class DeviceService {
         return deviceRepository.findByState(deviceState);
     }
     
-    public Mono<Device> updateDevice(Long id, UpdateDeviceRequest request) {
+    public Mono<Device> updateDevice(Long id, String name, String brand, DeviceState state) {
         return deviceRepository.findById(id)
                 .switchIfEmpty(Mono.error(new DeviceNotFoundException("Device not found")))
                 .flatMap(device -> {
-                    if (device.isInUse() && (request.name() != null || request.brand() != null)) {
+                    if (device.isInUse() && (name != null || brand != null)) {
                         return Mono.error(new DeviceUpdateException(
                             "Cannot update name or brand of device in use"
                         ));
                     }
-                    return performUpdate(device, request);
+                    return performUpdate(device, name, brand, state);
                 });
     }
     
-    private Mono<Device> performUpdate(Device device, UpdateDeviceRequest request) {
+    private Mono<Device> performUpdate(Device device, String name, String brand, DeviceState state) {
         Device updated = device;
         
-        if (request.name() != null) {
-            updated = updated.withName(request.name());
+        if (name != null) {
+            updated = updated.withName(name);
         }
         
-        if (request.brand() != null) {
-            updated = updated.withBrand(request.brand());
+        if (brand != null) {
+            updated = updated.withBrand(brand);
         }
         
-        if (request.state() != null) {
-            try {
-                DeviceState newState = DeviceState.valueOf(request.state().toUpperCase());
-                updated = updated.withState(newState);
-            } catch (IllegalArgumentException e) {
-                return Mono.error(new DeviceUpdateException("Invalid state: " + request.state()));
-            }
+        if (state != null) {
+            updated = updated.withState(state);
         }
         
         return deviceRepository.save(updated);
