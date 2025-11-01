@@ -54,14 +54,15 @@ class DeviceE2ETest extends AbstractIntegrationTest {
         
         assertThat(deviceId).isNotNull();
         
-        // 2. Get all devices - should see our device
+        // 2. Get all devices - should see our device (now paginated)
         webTestClient.get()
                 .uri("/api/v1/devices")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()
-                .jsonPath("$.length()").isEqualTo(1)
-                .jsonPath("$[0].id").isEqualTo(deviceId);
+                .jsonPath("$.content.length()").isEqualTo(1)
+                .jsonPath("$.totalElements").isEqualTo(1)
+                .jsonPath("$.content[0].id").isEqualTo(deviceId);
         
         // 3. Set device to IN_USE
         String updateToInUse = """
@@ -179,13 +180,14 @@ class DeviceE2ETest extends AbstractIntegrationTest {
                     .expectStatus().isCreated();
         }
         
-        // Verify all are created
+        // Verify all are created (now paginated)
         webTestClient.get()
                 .uri("/api/v1/devices")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()
-                .jsonPath("$.length()").isEqualTo(5);
+                .jsonPath("$.content.length()").isEqualTo(5)
+                .jsonPath("$.totalElements").isEqualTo(5);
     }
     
     @Test

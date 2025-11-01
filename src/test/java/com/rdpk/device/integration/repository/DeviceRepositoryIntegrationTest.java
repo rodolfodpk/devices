@@ -8,6 +8,8 @@ import com.rdpk.device.repository.DeviceRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -84,8 +86,9 @@ class DeviceRepositoryIntegrationTest extends AbstractIntegrationTest {
         deviceRepository.save(DeviceFixture.createAvailableDevice("Device 2", "Brand"))
                 .block();
         
-        // When
-        List<Device> devices = deviceRepository.findAllByOrderByCreatedAtDesc()
+        // When - Use paginated method
+        Pageable pageable = PageRequest.of(0, 20);
+        List<Device> devices = deviceRepository.findAllByOrderByCreatedAtDesc(pageable)
                 .collectList()
                 .block();
         
@@ -104,8 +107,9 @@ class DeviceRepositoryIntegrationTest extends AbstractIntegrationTest {
         deviceRepository.save(DeviceFixture.createAvailableDevice("Device 2", "Samsung")).block();
         deviceRepository.save(DeviceFixture.createAvailableDevice("Device 3", "Apple")).block();
         
-        // When
-        List<Device> devices = deviceRepository.findByBrandOrderByCreatedAtDesc("Apple")
+        // When - Use paginated method
+        Pageable pageable = PageRequest.of(0, 20);
+        List<Device> devices = deviceRepository.findByBrand("Apple", pageable)
                 .collectList()
                 .block();
         
@@ -127,8 +131,9 @@ class DeviceRepositoryIntegrationTest extends AbstractIntegrationTest {
         deviceRepository.save(inUse3)
                 .block();
         
-        // When
-        List<Device> devices = deviceRepository.findByStateOrderByCreatedAtDesc(DeviceState.IN_USE)
+        // When - Use paginated method
+        Pageable pageable = PageRequest.of(0, 20);
+        List<Device> devices = deviceRepository.findByState(DeviceState.IN_USE, pageable)
                 .collectList()
                 .block();
         

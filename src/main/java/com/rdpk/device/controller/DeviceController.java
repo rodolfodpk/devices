@@ -48,6 +48,9 @@ public class DeviceController {
      *   <li>Pagination: {@code ?page=0&size=20}</li>
      * </ul>
      * 
+     * <p>Pagination: If not provided, defaults to {@code page=0} and {@code size=20}.
+     * All responses are paginated for consistency and safety.
+     * 
      * <p>Sorting: Results are always sorted by {@code createdAt DESC} (newest first).
      * Custom sorting is not currently supported due to Spring Data R2DBC limitations.
      * 
@@ -55,7 +58,7 @@ public class DeviceController {
      * @param state Optional state filter (AVAILABLE, IN_USE, INACTIVE)
      * @param page Page number (0-indexed, optional, defaults to 0)
      * @param size Page size (optional, defaults to 20, max 100)
-     * @return Paginated response if pagination params provided, otherwise list of all devices
+     * @return Paginated response with devices
      */
     @GetMapping
     public Mono<ResponseEntity<?>> getAllDevices(
@@ -64,65 +67,42 @@ public class DeviceController {
             @RequestParam(required = false) Integer page,
             @RequestParam(required = false) Integer size) {
         
-        // If pagination parameters are provided, use paginated endpoints
+        // Validate pagination parameters if provided
         if (page != null || size != null) {
-            // Validate pagination parameters
             if (!isValidPagination(page, size)) {
                 return Mono.just(ResponseEntity.badRequest().build());
             }
-            
-            // Default sort: createdAt DESC
-            // Note: Spring Data R2DBC doesn't override OrderBy with Sort from Pageable,
-            // so we use the default sort defined in repository method name
-            int pageNumber = page != null ? page : 0;
-            int pageSize = size != null ? size : 20;
-            Pageable pageable = PageRequest.of(pageNumber, pageSize);
-            
-            if (brand != null) {
-                return buildPaginatedResponse(
-                        deviceService.getDevicesByBrand(brand, pageable),
-                        deviceService.countByBrand(brand),
-                        pageNumber, pageSize
-                );
-            }
-            
-            if (state != null) {
-                return DeviceState.fromString(state)
-                        .map(deviceState -> buildPaginatedResponse(
-                                deviceService.getDevicesByState(deviceState, pageable),
-                                deviceService.countByState(deviceState),
-                                pageNumber, pageSize
-                        ))
-                        .orElse(Mono.just(ResponseEntity.badRequest().build()));
-            }
-            
-            // Paginated all devices
+        }
+        
+        // Default pagination: page=0, size=20
+        int pageNumber = page != null ? page : 0;
+        int pageSize = size != null ? size : 20;
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        
+        if (brand != null) {
             return buildPaginatedResponse(
-                    deviceService.getAllDevices(pageable),
-                    deviceService.countAllDevices(),
+                    deviceService.getDevicesByBrand(brand, pageable),
+                    deviceService.countByBrand(brand),
                     pageNumber, pageSize
             );
         }
         
-        // Non-paginated (backward compatibility)
-        if (brand != null) {
-            return deviceService.getDevicesByBrand(brand)
-                    .map(GetDeviceResponse::from)
-                    .collectList()
-                    .map(ResponseEntity::ok);
-        }
-        
         if (state != null) {
-            return deviceService.getDevicesByState(state)
-                    .map(GetDeviceResponse::from)
-                    .collectList()
-                    .map(ResponseEntity::ok);
+            return DeviceState.fromString(state)
+                    .map(deviceState -> buildPaginatedResponse(
+                            deviceService.getDevicesByState(deviceState, pageable),
+                            deviceService.countByState(deviceState),
+                            pageNumber, pageSize
+                    ))
+                    .orElse(Mono.just(ResponseEntity.badRequest().build()));
         }
         
-        return deviceService.getAllDevices()
-                .map(GetDeviceResponse::from)
-                .collectList()
-                .map(ResponseEntity::ok);
+        // Paginated all devices
+        return buildPaginatedResponse(
+                deviceService.getAllDevices(pageable),
+                deviceService.countAllDevices(),
+                pageNumber, pageSize
+        );
     }
     
     @GetMapping("/{id}")

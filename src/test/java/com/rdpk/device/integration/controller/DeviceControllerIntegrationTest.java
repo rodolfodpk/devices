@@ -74,19 +74,20 @@ class DeviceControllerIntegrationTest extends AbstractIntegrationTest {
     }
     
     @Test
-    @DisplayName("GET /api/v1/devices - Should return all devices")
+    @DisplayName("GET /api/v1/devices - Should return all devices (paginated)")
     void shouldGetAllDevices() {
         // Given
         deviceRepository.save(DeviceFixture.createAvailableDevice("Device 1", "Brand")).block();
         deviceRepository.save(DeviceFixture.createAvailableDevice("Device 2", "Brand")).block();
         
-        // When & Then
+        // When & Then - Now returns paginated response
         webTestClient.get()
                 .uri("/api/v1/devices")
                 .exchange()
                 .expectStatus().isOk()
-                .expectBodyList(Device.class)
-                .hasSize(2);
+                .expectBody()
+                .jsonPath("$.content.length()").isEqualTo(2)
+                .jsonPath("$.totalElements").isEqualTo(2);
     }
     
     @Test
@@ -97,15 +98,16 @@ class DeviceControllerIntegrationTest extends AbstractIntegrationTest {
         deviceRepository.save(DeviceFixture.createAvailableDevice("Galaxy", "Samsung")).block();
         deviceRepository.save(DeviceFixture.createAvailableDevice("iPad", "Apple")).block();
         
-        // When & Then
+        // When & Then - Now returns paginated response
         webTestClient.get()
                 .uri("/api/v1/devices?brand=Apple")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()
-                .jsonPath("$.length()").isEqualTo(2)
-                .jsonPath("$[0].brand").isEqualTo("Apple")
-                .jsonPath("$[1].brand").isEqualTo("Apple");
+                .jsonPath("$.content.length()").isEqualTo(2)
+                .jsonPath("$.totalElements").isEqualTo(2)
+                .jsonPath("$.content[0].brand").isEqualTo("Apple")
+                .jsonPath("$.content[1].brand").isEqualTo("Apple");
     }
     
     @Test
@@ -118,14 +120,15 @@ class DeviceControllerIntegrationTest extends AbstractIntegrationTest {
         Device inUse3 = DeviceFixture.createDeviceWithState("Device 3", "Brand", DeviceState.IN_USE);
         deviceRepository.save(inUse3).block();
         
-        // When & Then
+        // When & Then - Now returns paginated response
         webTestClient.get()
                 .uri("/api/v1/devices?state=AVAILABLE")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()
-                .jsonPath("$.length()").isEqualTo(1)
-                .jsonPath("$[0].state").isEqualTo("AVAILABLE");
+                .jsonPath("$.content.length()").isEqualTo(1)
+                .jsonPath("$.totalElements").isEqualTo(1)
+                .jsonPath("$.content[0].state").isEqualTo("AVAILABLE");
     }
     
     @Test

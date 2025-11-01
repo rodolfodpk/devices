@@ -20,10 +20,5 @@ public interface DeviceRepository extends ReactiveCrudRepository<Device, Long> {
     
     Flux<Device> findByState(DeviceState state, Pageable pageable);
     Mono<Long> countByState(DeviceState state);
-    
-    // Non-paginated methods (backward compatibility)
-    Flux<Device> findAllByOrderByCreatedAtDesc();
-    Flux<Device> findByBrandOrderByCreatedAtDesc(String brand);
-    Flux<Device> findByStateOrderByCreatedAtDesc(DeviceState state);
 }
 

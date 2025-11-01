@@ -92,21 +92,6 @@ public class DeviceService {
         return applyResilience(deviceRepository.countByState(state));
     }
     
-    // Non-paginated methods (backward compatibility)
-    public Flux<Device> getAllDevices() {
-        return applyResilience(deviceRepository.findAllByOrderByCreatedAtDesc());
-    }
-    
-    public Flux<Device> getDevicesByBrand(String brand) {
-        return applyResilience(deviceRepository.findByBrandOrderByCreatedAtDesc(brand));
-    }
-    
-    public Flux<Device> getDevicesByState(String state) {
-        return DeviceState.fromString(state)
-                .map(deviceState -> applyResilience(deviceRepository.findByStateOrderByCreatedAtDesc(deviceState)))
-                .orElse(Flux.error(new RuntimeException("Invalid state: " + state)));
-    }
-    
     /**
      * Partially updates a device.
      * 
