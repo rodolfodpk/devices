@@ -132,6 +132,16 @@ class DeviceControllerIntegrationTest extends AbstractIntegrationTest {
     }
     
     @Test
+    @DisplayName("GET /api/v1/devices?state=INVALID - Should return 400 for invalid state")
+    void shouldReturn400ForInvalidState() {
+        // When & Then
+        webTestClient.get()
+                .uri("/api/v1/devices?state=INVALID_STATE")
+                .exchange()
+                .expectStatus().isBadRequest();
+    }
+    
+    @Test
     @DisplayName("GET /api/v1/devices/{id} - Should return device by ID")
     void shouldGetDeviceById() {
         // Given
@@ -263,6 +273,28 @@ class DeviceControllerIntegrationTest extends AbstractIntegrationTest {
                 .jsonPath("$.name").isEqualTo("Original Name")
                 .jsonPath("$.brand").isEqualTo("Original Brand")
                 .jsonPath("$.state").isEqualTo("IN_USE");
+    }
+    
+    @Test
+    @DisplayName("PATCH /api/v1/devices/{id} - Should return 400 for invalid state")
+    void shouldReturn400ForInvalidStateInUpdate() {
+        // Given
+        Device saved = deviceRepository.save(DeviceFixture.createAvailableDevice())
+                .block();
+        
+        String requestBody = """
+                {
+                    "state": "INVALID_STATE"
+                }
+                """;
+        
+        // When & Then
+        webTestClient.patch()
+                .uri("/api/v1/devices/{id}", saved.id())
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(requestBody)
+                .exchange()
+                .expectStatus().isBadRequest();
     }
     
     @Test

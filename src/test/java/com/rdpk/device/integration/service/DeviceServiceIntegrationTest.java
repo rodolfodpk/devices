@@ -124,14 +124,6 @@ class DeviceServiceIntegrationTest extends AbstractIntegrationTest {
     }
     
     @Test
-    @DisplayName("Should return error for invalid state")
-    void shouldReturnErrorForInvalidState() {
-        // Note: Invalid state parsing is now handled at controller level
-        // This test is kept for completeness but the service method signature changed
-        // Controller will return 400 Bad Request for invalid states
-    }
-    
-    @Test
     @DisplayName("Should update device successfully when device is available")
     void shouldUpdateDeviceWhenAvailable() {
         // Given
